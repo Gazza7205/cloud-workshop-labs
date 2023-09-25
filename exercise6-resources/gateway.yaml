@@ -16,7 +16,13 @@ spec:
       rollingUpdate:
         maxUnavailable: 1
         maxSurge: 0
-    bundle: []
+    bundle:
+      - type: graphman
+        source: secret
+        name: graphman-otel-test-services
+      - type: graphman
+        source: secret
+        name: graphman-otel-message-complete
     bootstrap:
       script:
         enabled: false

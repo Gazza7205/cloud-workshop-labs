@@ -43,6 +43,9 @@ To create some test services, we are going to bootstrap the gateway with some bu
     3. Service URL
     4. Org Id if present in query parameter. Set to 'NONE' otherwise.
 3. Message completed policy having Telemetry assertion.
+4. Config map having script to call the services.
+
+To create bundles as secrets, we use Kustomize. Execute to below command to create the granphman bundle secrets
 
 ```
 kubectl apply -k ./exercise6-resources/
@@ -50,8 +53,9 @@ kubectl apply -k ./exercise6-resources/
 
 ### Configuring the Gateway
 We can now create/update our Gateway Custom Resource with the bundles and OTel related configuration.
+The base CRD can be found [here](/exercise6-resources/gateway.yaml).
 
-1. Add OTel annotation to the gateway container. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. Update the CRD name accordingly.
+1. Add OTel annotation to the gateway container under spec.app. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. Update the CRD name accordingly.
 ```
 annotations:
     # Collector configuration CRD name.
@@ -61,26 +65,26 @@ annotations:
     # Container name to instrument
     instrumentation.opentelemetry.io/container-names: "gateway"
 ```
-2. Test service bundles.
+2. Update spec.app.bundle to point to test service graphman bundles secrets
 ```
 bundle:
     - type: graphman
-    source: secret
-    name: graphman-otel-test-services
+      source: secret
+      name: graphman-otel-test-services
     - type: graphman
-    source: secret
-    name: graphman-otel-message-complete
+      source: secret
+      name: graphman-otel-message-complete
 ```
-3. Disable auto instrumentation of all libraries except c3p0 and runtime-metrics
+3. Disable auto instrumentation of all libraries except c3p0 and runtime-metrics. Add below jvm params at spec.app.java.extraArgs
 ```
 - -Dotel.instrumentation.common.default-enabled=false
+- -Dotel.instrumentation.opentelemetry-api.enabled=true
 - -Dotel.instrumentation.runtime-metrics.enabled=true
-- -Dotel.instrumentation.c3p0.enabled=true
 ```
 For this we will be configuring [gateway.yaml](./exercise2-resources/gateway.yaml).
 2. Update the Gateway CR
 ```
-kubectl apply -f ./exercise2-resources/gateway.yaml
+kubectl apply -f ./exercise6-resources/gateway.yaml
 ```
 
 ### Update the Gateway
@@ -91,8 +95,16 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 kubectl apply -f ./exercise6-resources/gateway.yaml
 ```
 ### Call Test services.
-To generate some load, let’s start a container which will do curl calls 
+To generate some load, let’s start a container which will do curl calls. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
 
+```
+kubectl apply -f ./exercise6-resources/test-services.yaml
+```
 ### Moitor Gateway
+1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
+2. Search for 'Layer7 Gateway Dashboard' and click on the link.
+3. Select the Gateway you would to moniter in 'Gateway' dropdown (workshopuser(n)-ssg)
+4. You should be able to see the Gateway Service metrics along with jvm, database mertices on the dashboard.
+
 
 ### Start [Exercise 7](./lab-exercise7.md)

@@ -8,4 +8,8 @@ secretGenerator:
     - ./otel_test_services.json
 - name: graphman-otel-message-complete
   files:
-    - ./otel_message_complete.bundle
+    - ./otel_message_complete.json
+configMapGenerator:
+- name: send-api-requests-script
+  files:
+  - script.sh=./send_api_requests.sh

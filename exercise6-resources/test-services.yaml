@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-requests
+  labels:
+    app: api-requests
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-requests
+  template:
+    metadata:
+      labels:
+        app: api-requests
+    spec:
+      volumes:
+      - name: configmap-script
+        configMap:
+          name: send-api-requests-script
+          defaultMode: 511
+      containers:
+      - name: busybox
+        image: busybox
+        command: 
+        - /bin/sh
+        - -c
+        - "/configmap/script.sh"
+        volumeMounts:
+        - name: configmap-script
+          mountPath: /configmap
