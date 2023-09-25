@@ -33,7 +33,7 @@ kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-mana
 
 - Create a secret with your Gateway v11.x license
 ```
-kubectl create secret generic gateway-license --from-file=/path/to/license.xml
+kubectl create secret generic gateway-license --from-file=./exercise1-resources/license.xml
 ```
 - Create a Gateway CR
 ```
