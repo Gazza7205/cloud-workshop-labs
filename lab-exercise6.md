@@ -11,17 +11,17 @@ Please perform the steps [here](./readme.md#before-you-start) to configure your 
 - [Configuring the Gateway](#configuring-the-gateway)
 - [Update the Gateway](#update-the-gateway)
 - [Call Test services](#call-test-services)
-- [Monitor gateway](#monitor-gateway)
+- [Moitor Gateway](#moitor-gateway)
 
 ### Open Telemetry Collector
 1. Update the [collector.yaml](/exercise6-resources/collector.yaml) as below and create it using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar when the gateway comes up.
-    a. Name - 'workshopuser(n)-eck'
-    b. Resource name to uniquely identify the gateway installation - 'workshopuser(n)-ssg'
+    1. Name - 'workshopuser(n)-eck'
+    2. Resource name to uniquely identify the gateway installation - 'workshopuser(n)-ssg'
 ```
 kubectl apply -f ./exercise6-resources/collector.yaml
 ```
 2. Update the instrumentation CRD [instrumentation.ymal](/exercise6-resources/instrumentation.yaml) create it using kubectl. This will inject OTel agent into the Gateway deployment. Also, allows us to set agent configuration.
-    a. Service name - 'workshopuser(n)-ssg'
+    1. Service name - 'workshopuser(n)-ssg'
 ```
 kubectl apply -f ./exercise6-resources/instrumentation.yaml
 ```
@@ -29,19 +29,19 @@ kubectl apply -f ./exercise6-resources/instrumentation.yaml
 ### Create test services
 To create some test services, we are going to bootstrap the gateway with some bundles.
 1. OTel test services. All services have 'export_metric_variables' policy embedded in them.
-    a. /test1 - Always success. Calls another service /echotest and returns result from it.
-    b. /test2 - Always errors out with a policy error
-    c. /test3 - Always errors out with a routing error. Try’s to call an invalid backend service
-    d. /test4 - Always Success. No routing to policy error.    
-    e. /test5 - Takes two query parameters as input and calculate the age (years elapsed). It has some error and needs to be fixed.
+    1. /test1 - Always success. Calls another service /echotest and returns result from it.
+    2. /test2 - Always errors out with a policy error
+    3. /test3 - Always errors out with a routing error. Try’s to call an invalid backend service
+    4. /test4 - Always Success. No routing to policy error.    
+    5. /test5 - Takes two query parameters as input and calculate the age (years elapsed). It has some error and needs to be fixed.
         i. dob - Date of birth - default format dd/MM/yyyy
         ii. format (optional) - Specify the format of dob
-    f. /echotest - Returns system date and time.
+    6. /echotest - Returns system date and time.
 2. export_metric_variables - This is a template policy which does a context variables export of
-    a. Service name
-    b. Service OID
-    c. Service URL
-    d. Org Id if present in query parameter. Set to 'NONE' otherwise.
+    1. Service name
+    2. Service OID
+    3. Service URL
+    4. Org Id if present in query parameter. Set to 'NONE' otherwise.
 3. Message completed policy having Telemetry assertion.
 
 ```
@@ -93,6 +93,6 @@ kubectl apply -f ./exercise6-resources/gateway.yaml
 ### Call Test services.
 To generate some load, let’s start a container which will do curl calls 
 
-### Moitor gateway.
+### Moitor Gateway
 
 ### Start [Exercise 7](./lab-exercise7.md)
