@@ -16,7 +16,7 @@ while [ $a -lt 1000 ]
 do
 	rand_index=$[RANDOM % ${#GATEWAY_SERVICE_URL[@]}]
 	#echo "${rand_index}"
-        org_index=$[RANDOM % ${#ORG_ID[@]}]
+    org_index=$[RANDOM % ${#ORG_ID[@]}]
 	curl --silent --show-error https://$GATEWAY_HOSTNAME:${GATEWAY_PORT}/${GATEWAY_SERVICE_URL[$rand_index]}?orgid=$org_index --insecure> /dev/null
 
 	rand_sleep=$[RANDOM % 1000]
