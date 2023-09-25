@@ -1,40 +1,39 @@
 
 # Lab exercise 6
-This exercise help you to Observe Gateway using OpenTelemetry Metrics, Traces and Logs. The lab environment is has Open Telemetry Operator, [Kibana](https://kibana.brcmlabs.com/) and [Jaeger](https://jaeger.brcmlabs.com/) services pre-installed to moniter the Gateway.
+This exercise help you to Observe Gateway using Open Telemetry Metrics, Traces and Logs. The lab environment is has Open Telemetry Operator, [Kibana](https://kibana.brcmlabs.com/) and [Jaeger](https://jaeger.brcmlabs.com/) services pre-installed to monitor the Gateway.
 
 ### This exercise requires pre-requisites
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 1](./lab-exercise1.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
 
 ## Key concepts
-- [Creating a Kubernetes Secret for Gateway management](#gateway-management)
-- [Creating Kubernetes Secrets with Graphman Bundles](#graphman-bundle)
-- [Creating Kubernetes Secrets with Restman Bundles](#restman-bundle)
-- [Using Kustomize](#using-kustomize)
-- [InitContainers](#initcontainers)
+- [Open Telemetry Collector](#open-telemetry-collector)
+- [Create test services](#create-test-services)
 - [Configuring the Gateway](#configuring-the-gateway)
 - [Update the Gateway](#update-the-gateway)
+- [Call Test services](#call-test-services)
+- [Monitor gateway](#monitor-gateway)
 
 ### Open Telemetry Collector
-1. Update the [collector.yaml](/exercise6-resources/collector.yaml) as below and create it using kubectl. This OTel collector configureation is used to create a OTel Collecor as a sidecar when the gateway comes up.
+1. Update the [collector.yaml](/exercise6-resources/collector.yaml) as below and create it using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar when the gateway comes up.
     a. Name - 'workshopuser(n)-eck'
-    b. Resource name to uniquely identtify the gateway installation - 'workshopuser(n)-ssg'
+    b. Resource name to uniquely identify the gateway installation - 'workshopuser(n)-ssg'
 ```
 kubectl apply -f ./exercise6-resources/collector.yaml
 ```
-2. Update the instrumentation CRD [instrumentation.ymal](/exercise6-resources/instrumentation.yaml) create it using kubectl. This will inject OTel agent into the Gateway deploymnet. Also, alows us to set agent configuration.
+2. Update the instrumentation CRD [instrumentation.ymal](/exercise6-resources/instrumentation.yaml) create it using kubectl. This will inject OTel agent into the Gateway deployment. Also, allows us to set agent configuration.
     a. Service name - 'workshopuser(n)-ssg'
 ```
 kubectl apply -f ./exercise6-resources/instrumentation.yaml
 ```
 
-### Create test servics
-To create some test services, we are going to bootstap the gateway with some bundles.
-1. OTel test services. All services have 'export_metric_variables' policy embeded in them.
-    a. /test1 - Allways success. Calls another service /echotest and returns result from it.
-    b. /test2 - Allways errors out with a policy error
-    c. /test3 - Allways errors out with a routing error. Trys to call an invalid backend service
-    d. /test4 - Allways Scuccess. No routing to policy error.    
-    e. /test5 - Takes two query parameters as input and calulate the age (years elapsed). It has some error and needs to be fixed.
+### Create test services
+To create some test services, we are going to bootstrap the gateway with some bundles.
+1. OTel test services. All services have 'export_metric_variables' policy embedded in them.
+    a. /test1 - Always success. Calls another service /echotest and returns result from it.
+    b. /test2 - Always errors out with a policy error
+    c. /test3 - Always errors out with a routing error. Try’s to call an invalid backend service
+    d. /test4 - Always Success. No routing to policy error.    
+    e. /test5 - Takes two query parameters as input and calculate the age (years elapsed). It has some error and needs to be fixed.
         i. dob - Date of birth - default format dd/MM/yyyy
         ii. format (optional) - Specify the format of dob
     f. /echotest - Returns system date and time.
@@ -42,14 +41,14 @@ To create some test services, we are going to bootstap the gateway with some bun
     a. Service name
     b. Service OID
     c. Service URL
-    d. Org Id if present in query param. Set to 'NONE' otherwise.
+    d. Org Id if present in query parameter. Set to 'NONE' otherwise.
 3. Message completed policy having Telemetry assertion.
 
 ```
 kubectl apply -k ./exercise6-resources/
 ```
 
-### Configuring The Gateway
+### Configuring the Gateway
 We can now create/update our Gateway Custom Resource with the bundles and OTel related configuration.
 
 1. Add OTel annotation to the gateway container. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. Update the CRD name accordingly.
@@ -91,9 +90,9 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 ```
 kubectl apply -f ./exercise6-resources/gateway.yaml
 ```
-### Test services.
-To generate some load, lets start a container which will do curl calls 
+### Call Test services.
+To generate some load, let’s start a container which will do curl calls 
 
-
+### Moitor gateway.
 
 ### Start [Exercise 7](./lab-exercise7.md)
