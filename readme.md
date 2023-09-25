@@ -52,8 +52,6 @@ No resources found in workshopuser(n) namespace.
   - This exercise combines the previous examples in more depth
 - [Exercise 5](./lab-exercise5.md)
   - This exercise introduces External Secrets
-- [Exercise 6](./lab-exercise6.md)
-  - Preview (alpha) - This exercise shows the current features for External Keys
 - [Exercise 7](./lab-exercise7.md)
   - This exercise enables Open Telemetry on gateway (service metrics and trace configuration)
 - [Exercise 8](./lab-exercise8.md)
