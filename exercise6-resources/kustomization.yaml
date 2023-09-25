@@ -12,4 +12,4 @@ secretGenerator:
 configMapGenerator:
 - name: send-api-requests-script
   files:
-  - script.sh=./send_api_requests.sh
+  - script=./send_api_requests.sh

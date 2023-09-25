@@ -16,7 +16,22 @@ spec:
       rollingUpdate:
         maxUnavailable: 0
         maxSurge: 2
-    externalSecrets: []
+    externalSecrets:
+      - name: database-credentials-gcp
+        enabled: true
+        description: GCP Database credentials
+        variableReferencable: true
+      - name: mysupersecrets
+        enabled: true
+        description: top secret
+        variableReferencable: true
+        encryption:
+          passphrase: 7layer
+          existingSecret: ""
+      - name: private-key-secret
+        enabled: true
+        description: a private key
+        variableReferencable: false
     bundle:
       - type: restman
         source: secret
@@ -24,6 +39,9 @@ spec:
       - type: graphman
         source: secret
         name: graphman-cluster-property-bundle
+      - type: graphman
+        source: secret
+        name: graphman-secret-reader-bundle
     bootstrap:
       script:
         enabled: true

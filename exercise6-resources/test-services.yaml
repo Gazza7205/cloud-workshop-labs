@@ -1,31 +1,33 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: api-requests
   labels:
     app: api-requests
+  name: api-requests
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: api-requests
+  backoffLimit: 1
   template:
     metadata:
       labels:
         app: api-requests
     spec:
-      volumes:
-      - name: configmap-script
-        configMap:
-          name: send-api-requests-script
-          defaultMode: 511
       containers:
-      - name: busybox
-        image: busybox
-        command: 
-        - /bin/sh
-        - -c
-        - "/configmap/script.sh"
+      - command:
+        - /bin/bash
+        - /script.sh
+        image: harbor.sutraone.com/dev/api-requests
+        imagePullPolicy: IfNotPresent
+        name: api-requests
         volumeMounts:
-        - name: configmap-script
-          mountPath: /configmap
+        - mountPath: /script.sh
+          name: script
+          subPath: script.sh
+      restartPolicy: Never
+      volumes:
+      - configMap:
+          defaultMode: 511
+          items:
+          - key: script
+            path: script.sh
+          name: send-api-requests-script
+        name: script

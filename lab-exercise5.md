@@ -1,38 +1,72 @@
 # Lab exercise 5
-This exercise introduces external secrets. [See other exercises](./readme.md#lab-exercises).
+This exercise introduces how to use external kubernetes secrets as Gateway Stored Passwords. [See other exercises](./readme.md#lab-exercises).
 
 ### This exercise requires pre-requisites
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 4](./lab-exercise4.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
 
-You will have an updated gateway at this point, copy your gateway.yaml into [./exercise5-resources](./exercise5-resources/)
+You will have an updated gateway at this point, copy your gateway.yaml into [./exercise5-resources](./exercise5-resources/). Make sure that replicas is equal to 1 before applying.
 
 ## Key concepts
-- [Create Kubernetes Secrets](#create-repositories)
+- [Create Kubernetes Secret](#create-kubernetes-secret)
 - [Configure Gateway](#configure-repository-references)
 - [Update the Gateway](#update-the-gateway)
 - [Inspect the Gateway](#inspect-the-gateway)
 - [Test your Gateway Deployment](#test-your-gateway-deployment)
 
-### Create Repositories
-There are 3 repository custom resources defined [here](./exercise4-resources/repositories/). These make up a recommended framework that aims to break up more complex environments into more manageable parts. In this example we will use a secret instead of including username and token directly in our repository resources. The secret will be created in step 2 using kustomize.
+### Create Kubernetes Secret
+Kubernetes Secrets are stored as base64 encoded strings without any encryption, Graphman accepts encrypted values and decrypts them with either the clusterPassphrase or a user supplied passphrase.
 
-All 3 repositories are publicly available and will expanded upon in the next session
-- Framework Repository
-- Subscriptions Repository
-- APIs Repository
+1. Encrypt a value (there may be a warning about the key deriviation which we will ignore for now.)
+```
+echo -n "myothersupersecretvalue" | openssl enc -aes-256-cbc -md sha256 -pass pass:7layer -a
+```
+output
+```
+U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+```
 
-1. Open a new terminal and inspect the Layer7 Operator log
+2. Create a simple secret
+Note that mysupersecret2 is the encrypted value that we derived in the previous step. This provides encryption for this value at rest in Kubernetes.
 ```
-kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
 ```
-2. Create Repositories
+3. Create the exercise 5 resources
+This step will create a graphman bundle that exposes a very simple endpoint that returns Gateway Stored Passwords in plaintext and enable access to the GCP Secret Manager via the external secrets operator.
 ```
-kubectl apply -k ./exercise4-resources/repositories/
+kubectl apply -k ./exercise5-resources
 ```
-3. View the created repositories
+In a few seconds there will be a secret called database-credentials-gcp created in your namespace. The [external secrets operator](https://external-secrets.io/latest/) creates a local copy of the external secret so that we can use it in Kubernetes. The external secrets operator has integrations for a variety of secret management [providers](https://external-secrets.io/latest/provider/aws-secrets-manager/).
 ```
-kubectl get repositories
+kubectl get secret database-credentials-gcp -oyaml
 ```
+
+3. Update [gateway.yaml](./exercise5-resources/gateway.yaml). You may be using a gateway definition from a previous exercise, please ensure that replicas is set to 1.
+We need to add two things to this file
+
+- The new bundle we created
+```
+bundle:
+    ...
+    - type: graphman
+    source: secret
+    name: graphman-secret-reader-bundle
+```
+- External secret references
+```
+externalSecrets:
+  - name: database-credentials-gcp
+    enabled: true
+    description: GCP Database credentials
+  - name: mysupersecrets
+    enabled: true
+    description: top secret
+  - name: private-key-secret
+    enabled: true
+    description: a private key
+```
+
+4. Configure the external secrets operator
+
 output
 ```
 NAME                    AGE
