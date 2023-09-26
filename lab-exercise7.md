@@ -1,9 +1,9 @@
 
 # Lab exercise 7
-This exercise we will make of Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services can take in a query parameter which denote the organization the client (caller) belongs to. Now we would like to know the usage of apis by organization. 
+This exercise we will make use of Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of apis by organization. 
 
 ### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), we will re-use the test services.
+Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), and is a pre-requisite.
 
 ## Key concepts
 - [Create message complete policy](#create-message-complete-policy)
@@ -24,10 +24,10 @@ kubectl create secret generic graphman-otel-message-complete --from-file=./exerc
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
 ### Configuring the Gateway
-We can now create/update our Gateway Custom Resource with the bundles and OTel related configuration.
+We can now create/update our Gateway Custom Resource with the above message complete bundle.
 The base CRD can be found [here](/exercise7-resources/gateway.yaml).
 
-1. Add message complete secret bundle to spec.app.bundle 
+1. Add message complete secret bundle to _***spec.app.bundle***_
 ```
 bundle:
   - type: graphman
@@ -39,7 +39,7 @@ bundle:
 ```
 
 ### Update the Gateway
-Now that we've configured our Gateway Custom Resource to make Gateway Observable we can now send the updated manifest into Kubernetes. The Layer7 Operator will then reconcile our new desired state with reality.
+Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile our new desired state with reality.
 
 1. Update the Gateway CR
 ```
@@ -59,8 +59,8 @@ kubectl apply -f ./exercise6-resources/test-services.yaml
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Usage By Org' and click on the link.
-3. Select the Gateway you would to monitor in 'Gateway' dropdown (workshopuser(n)-ssg)
-4. You should be able to chart with api usage by organization.
+3. Select the Gateway you would like to monitor in 'Gateway' dropdown (workshopuser(n)-ssg)
+4. You should be able to see chart with api usage by organization as below.
 
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/3084109f-fbb0-4471-986c-f8b71d65b819" /></kbd>
 
