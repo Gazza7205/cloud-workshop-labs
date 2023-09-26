@@ -6,17 +6,15 @@ This exercise we will make of Gateway Telemetry Tracing and identify the reason 
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), we will re-use the test services.
 
 ## Key concepts
-- [Create mssage complete policy](#create-message-complete-policy)
-- [Configuring the Gateway](#configuring-the-gateway)
+- [Enable Tracing on Gateway](#enable-tracing-on-gateway)
 - [Update the Gateway](#update-the-gateway)
-- [Call Test services](#call-test-services)
-- [Moitor Gateway](#moitor-gateway)
+- [Trace service on Jaeger](#trace-service-on-jaeger)
 
 ### Enable Tracing on Gateway
-We would like to control the amount of tracing so that it does not effect the Gateway performance and backend(Jaeger/Elasticsearch etc) disk space.
+We would like to control the amount of tracing so that it does not affect the Gateway performance and backend(Jaeger/Elastic search etc) disk space.
 In gateway we can enable and disable the trace using cwp `otel.traceEnabled`. Also, we need to configure which service to trace. This can be configured using `otel.traceConfig` cwp. This should in a json format. 
 1. Service(s) to trace can be specified by the url (regx) or service uid.
-2. Each assertion executd under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be included.
+2. Each assertion executed under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be included.
 3. Each span/assertion optionally have array of events/logs. They represent the context variables with values at the end of assertion execution. The assertion which need to trace the context variables need to be specified. By default none of the spans will have events with context variable values.
 
 Lets enable the trace for our service using url regx and also trace all context variables. We will exclude "Set Variable" assertion to reduce the noise.
@@ -61,9 +59,12 @@ kubectl delete pod xxxx
 ```
 3. Once the gateway is up. Call the test service at https://workshopuser(n).brcmlabs.com/test5 on browser or using curl.
 
-### Monitor Gateway
+### Trace service on Jaeger
 1. Open [Jaeger](https://jaeger.brcmlabs.com/)
 2. Select the your service under Service dropdown (workshopuser(n)-ssg)
-3. Select 'test5' under Operation and select appropriate 'Lookback' time and click on 'Find Traces'
-4. You should be able to chart with api usage by organization.
+3. Select 'age' in 'Operation' drop down box. The service name is age and url is /test5
+4. Select appropriate 'Lookback' time and click on 'Find Traces'
+5. Should result in some traces for the service. Click on any one of them.
+6. Walk through the spans and check for errors. Here, there is a javascript assertion error
 
+<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/5ff8a008-68e3-427f-8270-b33f1fc8e34b" /></kbd>
