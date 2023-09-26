@@ -6,9 +6,6 @@ secretGenerator:
 - name: graphman-otel-test-services
   files:
     - ./otel_test_services.json
-- name: graphman-otel-message-complete
-  files:
-    - ./otel_message_complete.json
 configMapGenerator:
 - name: send-api-requests-script
   files:

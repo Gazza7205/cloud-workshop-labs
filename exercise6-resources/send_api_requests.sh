@@ -4,7 +4,7 @@ GATEWAY_HOSTNAME=ssg
 GATEWAY_PORT=8443
 
 GATEWAY_SERVICE_URL=(test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test2 test3 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4 test4)
-ORG_ID=(HR FINANCE FACILITIES QUALITY PRODUCTION SALES)
+ORG_ID=(HR FINANCE QA QA QA QA PROD PROD SALES)
 
 echo "Sending requests to host '${GATEWAY_HOSTNAME}' on port '${GATEWAY_PORT}'....."
 echo "Press Ctrl + C to cancel"

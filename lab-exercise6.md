@@ -37,13 +37,7 @@ To create some test services, we are going to bootstrap the gateway with some bu
         i. dob - Date of birth - default format dd/MM/yyyy
         ii. format (optional) - Specify the format of dob
     6. /echotest - Returns system date and time.
-2. export_metric_variables - This is a template policy which does a context variables export of
-    1. Service name
-    2. Service OID
-    3. Service URL
-    4. Org Id if present in query parameter. Set to 'NONE' otherwise.
-3. Message completed policy having Telemetry assertion.
-4. Config map having script to call the services.
+2. Config map having script to call the services.
 
 To create bundles as secrets, we use Kustomize. Execute to below command to create the granphman bundle secrets
 
@@ -71,20 +65,12 @@ bundle:
     - type: graphman
       source: secret
       name: graphman-otel-test-services
-    - type: graphman
-      source: secret
-      name: graphman-otel-message-complete
 ```
 3. Disable auto instrumentation of all libraries except c3p0 and runtime-metrics. Add below jvm params at spec.app.java.extraArgs
 ```
 - -Dotel.instrumentation.common.default-enabled=false
 - -Dotel.instrumentation.opentelemetry-api.enabled=true
 - -Dotel.instrumentation.runtime-metrics.enabled=true
-```
-For this we will be configuring [gateway.yaml](./exercise2-resources/gateway.yaml).
-2. Update the Gateway CR
-```
-kubectl apply -f ./exercise6-resources/gateway.yaml
 ```
 
 ### Update the Gateway
@@ -95,7 +81,7 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 kubectl apply -f ./exercise6-resources/gateway.yaml
 ```
 ### Call Test services.
-To generate some load, let’s start a container which will do curl calls. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
+To generate some load, let’s run a job which will call the test services. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
 
 ```
 kubectl apply -f ./exercise6-resources/test-services.yaml
