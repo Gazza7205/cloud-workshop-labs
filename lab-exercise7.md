@@ -1,18 +1,18 @@
 
 # Lab exercise 7
-This exercise we will make of Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercis 6, all the test services can take in a query parameter which denote the organization the client (caller) belongs to. Now we would like to know the usage of apis by organization. 
+This exercise we will make of Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services can take in a query parameter which denote the organization the client (caller) belongs to. Now we would like to know the usage of apis by organization. 
 
 ### This exercise requires pre-requisites
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), we will re-use the test services.
 
 ## Key concepts
-- [Create mssage complete policy](#create-message-complete-policy)
+- [Create message complete policy](#create-message-complete-policy)
 - [Configuring the Gateway](#configuring-the-gateway)
 - [Update the Gateway](#update-the-gateway)
 - [Call Test services](#call-test-services)
-- [Moitor Gateway](#moitor-gateway)
+- [Monitor Gateway](#monitor-gateway)
 
-### Create messge complete policy
+### Create message complete policy
 Create a message complete policy with Telemetry Metric assertion. Select the type to be counter and attributes service.name, service.oid and service.resolutionUri
 Get organization id from request parameter, if not present set it to 'NONE'
 
@@ -46,7 +46,7 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 kubectl apply -f ./exercise7-resources/gateway.yaml
 ```
 ### Call Test services.
-To generate some load, we will reuse ths job from exercise6.
+To generate some load, we will reuse the job from exercise6.
 
 1. Delete the job if already present (created as part of exercise6)
 ```
@@ -56,11 +56,13 @@ kubectl delete job api-requests
 ```
 kubectl apply -f ./exercise6-resources/test-services.yaml
 ```
-### Moitor Gateway
+### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Usage By Org' and click on the link.
-3. Select the Gateway you would to moniter in 'Gateway' dropdown (workshopuser(n)-ssg)
+3. Select the Gateway you would to monitor in 'Gateway' dropdown (workshopuser(n)-ssg)
 4. You should be able to chart with api usage by organization.
 
+<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/3084109f-fbb0-4471-986c-f8b71d65b819" /></kbd>
 
-### Start [Exercise 7](./lab-exercise7.md)
+
+### Start [Exercise 8](./lab-exercise8.md)
