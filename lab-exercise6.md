@@ -66,7 +66,9 @@ bundle:
       source: secret
       name: graphman-otel-test-services
 ```
-3. Disable auto instrumentation of all libraries except c3p0 and runtime-metrics. Add below jvm params at spec.app.java.extraArgs
+3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at spec.app.java.extraArgs
+We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true
+Complete list of supported autinstumnetation library/framework can be found [here] (https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
 ```
 - -Dotel.instrumentation.common.default-enabled=false
 - -Dotel.instrumentation.opentelemetry-api.enabled=true
