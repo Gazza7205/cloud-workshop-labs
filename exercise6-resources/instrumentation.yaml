@@ -5,7 +5,7 @@ metadata:
 spec:
   env:
     - name: OTEL_SERVICE_NAME
-      value: workshopuser(n)-ssg
+      value: workshopuser20-ssg
     - name: OTEL_METRICS_EXPORTER
       value: otlp
     - name: OTEL_TRACES_EXPORTER

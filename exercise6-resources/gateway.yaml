@@ -16,13 +16,7 @@ spec:
       rollingUpdate:
         maxUnavailable: 1
         maxSurge: 0
-    bundle:
-      - type: graphman
-        source: secret
-        name: graphman-otel-test-services
-      - type: graphman
-        source: secret
-        name: graphman-otel-message-complete
+    bundle: []
     bootstrap:
       script:
         enabled: false
@@ -85,22 +79,6 @@ spec:
             com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
         - name: audit.setDetailLevel.FINE
           value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-        - name: otel.serviceMetricEnabled
-          value: "true"
-        - name: otel.traceEnabled
-          value: "false"
-        - name: otel.metricPrefix
-          value: l7_
-        - name: otel.resourceAttributes
-          value: k8s.container.name,k8s.pod.name
-        - name: otel.traceConfig
-          value: |
-            {
-             "services": [
-               {"url": ".*api.*"},
-               {"url": ".*test.*"}
-             ]
-            }
     system:
       properties: |-
         # Default Gateway system properties

@@ -49,7 +49,7 @@ kubectl apply -k ./exercise6-resources/
 We can now create/update our Gateway Custom Resource with the bundles and OTel related configuration.
 The base CRD can be found [here](/exercise6-resources/gateway.yaml).
 
-1. Add OTel annotation to the gateway container under spec.app. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. Update the CRD name accordingly.
+1. Add OTel annotation to the gateway container under *spec.app*. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. Update the CRD name accordingly.
 ```
 annotations:
     # Collector configuration CRD name.
@@ -59,20 +59,34 @@ annotations:
     # Container name to instrument
     instrumentation.opentelemetry.io/container-names: "gateway"
 ```
-2. Update spec.app.bundle to point to test service graphman bundles secrets
+2. Update *spec.app.bundle* to point to test service graphman bundles secrets
 ```
 bundle:
-    - type: graphman
-      source: secret
-      name: graphman-otel-test-services
+  - type: graphman
+    source: secret
+    name: graphman-otel-test-services
 ```
-3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at spec.app.java.extraArgs
+3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at *spec.app.java.extraArgs*
 We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true
 Complete list of supported autinstumnetation library/framework can be found [here] (https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
 ```
 - -Dotel.instrumentation.common.default-enabled=false
 - -Dotel.instrumentation.opentelemetry-api.enabled=true
 - -Dotel.instrumentation.runtime-metrics.enabled=true
+- -Dotel.instrumentation.jdbc.enabled=true
+- -Dotel.instrumentation.jdbc-datasource.enabled=true
+```
+4. Add Open Telemetry cluster wide properties
+Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7`. Also set resource attributes to capture.
+Add below cwp's at *spec.app.cwp.properties*
+
+```
+        - name: otel.serviceMetricEnabled
+          value: "true"
+        - name: otel.metricPrefix
+          value: l7_
+        - name: otel.resourceAttributes
+          value: k8s.container.name,k8s.pod.name
 ```
 
 ### Update the Gateway
