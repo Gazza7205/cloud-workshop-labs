@@ -1,7 +1,7 @@
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
-  name: workshopuser20-eck
+  name: workshopuser(n)-eck
 spec:
   image: otel/opentelemetry-collector-contrib:0.77.0
   mode: sidecar

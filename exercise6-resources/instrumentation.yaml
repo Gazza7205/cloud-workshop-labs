@@ -5,7 +5,7 @@ metadata:
 spec:
   env:
     - name: OTEL_SERVICE_NAME
-      value: workshopuser20-ssg
+      value: workshopuser(n)-ssg
     - name: OTEL_METRICS_EXPORTER
       value: otlp
     - name: OTEL_TRACES_EXPORTER
@@ -18,6 +18,3 @@ spec:
     - tracecontext
     - baggage
     - b3
-  sampler:
-    type: parentbased_traceidratio
-    argument: "0.25"
