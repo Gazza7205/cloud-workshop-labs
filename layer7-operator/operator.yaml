@@ -48,7 +48,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         image: docker.io/layer7api/layer7-operator:main
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /healthz
