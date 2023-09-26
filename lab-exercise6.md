@@ -102,7 +102,7 @@ To generate some load, let’s run a job which will call the test services. We w
 ```
 kubectl apply -f ./exercise6-resources/test-services.yaml
 ```
-### Moitor Gateway
+### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Layer7 Gateway Dashboard' and click on the link.
 3. Select the Gateway you would to moniter in 'Gateway' dropdown (workshopuser(n)-ssg)
