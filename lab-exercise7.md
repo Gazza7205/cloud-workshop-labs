@@ -21,7 +21,7 @@ Create a configmap containing the policy.
 kubectl create secret generic graphman-otel-message-complete --from-file=./exercise7-resources/otel_message_complete.json
 ```
 
-![image](https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15)
+<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
 ### Configuring the Gateway
 We can now create/update our Gateway Custom Resource with the bundles and OTel related configuration.
@@ -30,12 +30,12 @@ The base CRD can be found [here](/exercise7-resources/gateway.yaml).
 1. Add message complete secret bundle to spec.app.bundle 
 ```
 bundle:
-    - type: graphman
-      source: secret
-      name: graphman-otel-test-services
-    - type: graphman
-      source: secret
-      name: graphman-otel-message-complete
+  - type: graphman
+    source: secret
+    name: graphman-otel-test-services
+  - type: graphman
+    source: secret
+    name: graphman-otel-message-complete
 ```
 
 ### Update the Gateway
@@ -46,16 +46,21 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 kubectl apply -f ./exercise7-resources/gateway.yaml
 ```
 ### Call Test services.
-To generate some load, let’s start a container which will do curl calls. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
+To generate some load, we will reuse ths job from exercise6.
 
+1. Delete the job if already present (created as part of exercise6)
 ```
-kubectl apply -f ./exercise7-resources/test-services.yaml
+kubectl delete job api-requests
+```
+2. Submit the job
+```
+kubectl apply -f ./exercise6-resources/test-services.yaml
 ```
 ### Moitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
-2. Search for 'Layer7 Gateway Dashboard' and click on the link.
+2. Search for 'Usage By Org' and click on the link.
 3. Select the Gateway you would to moniter in 'Gateway' dropdown (workshopuser(n)-ssg)
-4. You should be able to see the Gateway Service metrics along with jvm, database mertices on the dashboard.
+4. You should be able to chart with api usage by organization.
 
 
 ### Start [Exercise 7](./lab-exercise7.md)

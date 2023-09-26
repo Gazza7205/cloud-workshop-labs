@@ -66,9 +66,9 @@ bundle:
     source: secret
     name: graphman-otel-test-services
 ```
-3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at *spec.app.java.extraArgs*
+3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at ***spec.app.java.extraArgs***
 We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true
-Complete list of supported autinstumnetation library/framework can be found [here] (https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
+Complete list of supported autinstumnetation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
 ```
 - -Dotel.instrumentation.common.default-enabled=false
 - -Dotel.instrumentation.opentelemetry-api.enabled=true
@@ -77,16 +77,16 @@ Complete list of supported autinstumnetation library/framework can be found [her
 - -Dotel.instrumentation.jdbc-datasource.enabled=true
 ```
 4. Add Open Telemetry cluster wide properties
-Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7`. Also set resource attributes to capture.
+Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7_`. Also set resource attributes to capture.
 Add below cwp's at *spec.app.cwp.properties*
 
 ```
-        - name: otel.serviceMetricEnabled
-          value: "true"
-        - name: otel.metricPrefix
-          value: l7_
-        - name: otel.resourceAttributes
-          value: k8s.container.name,k8s.pod.name
+- name: otel.serviceMetricEnabled
+    value: "true"
+- name: otel.metricPrefix
+    value: l7_
+- name: otel.resourceAttributes
+    value: k8s.container.name,k8s.pod.name
 ```
 
 ### Update the Gateway
