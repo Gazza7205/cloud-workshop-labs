@@ -17,11 +17,11 @@ Create a message complete policy with Telemetry Metric assertion. Select the typ
 Get organization id from request parameter, if not present set it to 'NONE'
 
 Create a configmap containing the policy.
-
 ```
 kubectl create secret generic graphman-otel-message-complete --from-file=./exercise7-resources/otel_message_complete.json
 ```
 
+![image](https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15)
 
 ### Configuring the Gateway
 We can now create/update our Gateway Custom Resource with the bundles and OTel related configuration.
