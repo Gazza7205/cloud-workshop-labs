@@ -51,7 +51,7 @@ No resources found in workshopuser(n) namespace.
 - [Exercise 4](./lab-exercise4.md)
   - This exercise combines the previous examples in more depth
 - [Exercise 5](./lab-exercise5.md)
-  - This exercise enables Open Telemetry on gateway (service metrics and trace configuration)
+  - This exercise enables Open Telemetry and Service Metrics on Gateway.
 - [Exercise 6](./lab-exercise6.md)
   - This exercise introduces custom Gateway Telemetry assertion.
 - [Exercise 7](./lab-exercise7.md)
