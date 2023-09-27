@@ -28,7 +28,7 @@ Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/g
 
 1. Add message complete secret bundle to _***spec.app.bundle***_
 </br> __* Uncomment lines 28 to 30 *__
-```
+```yaml
 bundle:
   - type: graphman
     source: secret
