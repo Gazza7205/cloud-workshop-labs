@@ -27,6 +27,7 @@ kubectl create secret generic graphman-otel-message-complete --from-file=./exerc
 Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml)
 
 1. Add message complete secret bundle to _***spec.app.bundle***_
+</br> __* Uncomment lines 28 to 30 *__
 ```
 bundle:
   - type: graphman
@@ -40,9 +41,19 @@ bundle:
 ### Update the Gateway
 Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile our new desired state with reality.
 
-1. Update the Gateway CR
+1. Update the Gateway CR and verify that the gateway pod is restarted.
 ```
 kubectl apply -f ./exercise5-resources/gateway.yaml
+```
+```
+kubectl get pods
+```
+Verify the age of ssg pod
+```
+NAME                                                  READY   STATUS      RESTARTS       AGE
+api-requests-5bvx2                                    0/1     Completed   0              5m38s
+layer7-operator-controller-manager-7c996ccfb6-9qsw6   2/2     Running     1 (108m ago)   109m
+ssg-56ff97b54d-nsx86                                  2/2     Running     0              116s
 ```
 ### Call Test services.
 To generate some load, we will reuse the job from exercise6.
