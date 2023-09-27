@@ -53,8 +53,8 @@ No resources found in workshopuser(n) namespace.
 - [Exercise 5](./lab-exercise5.md)
   - This exercise enables Open Telemetry on gateway (service metrics and trace configuration)
 - [Exercise 6](./lab-exercise6.md)
-  - This exercise introduces custom Telemetry assertion. (Global policy - message complete)
+  - This exercise introduces custom Gateway Telemetry assertion.
 - [Exercise 7](./lab-exercise7.md)
-  - Find root cause for a service error using Open Telemetry trace.
+  - This exercise will will trace a Gateway Service using Trace Open Telemetry tracing.
 - [Exercise 8](./lab-exercise8.md)
   - This exercise introduces External Secrets
