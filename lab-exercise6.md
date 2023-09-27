@@ -3,7 +3,7 @@
 This exercise we will make use of Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of apis by organization. 
 
 ### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), and is a pre-requisite.
+Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 5](./lab-exercise5.md), and is a pre-requisite.
 
 ## Key concepts
 - [Create message complete policy](#create-message-complete-policy)
@@ -24,8 +24,7 @@ kubectl create secret generic graphman-otel-message-complete --from-file=./exerc
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
 ### Configuring the Gateway
-We can now create/update our Gateway Custom Resource with the above message complete bundle.
-The base CRD can be found [here](/exercise6-resources/gateway.yaml).
+Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml)
 
 1. Add message complete secret bundle to _***spec.app.bundle***_
 ```
@@ -43,7 +42,7 @@ Apply the changes made to Gateway custom resource. The Layer7 Operator will then
 
 1. Update the Gateway CR
 ```
-kubectl apply -f ./exercise6-resources/gateway.yaml
+kubectl apply -f ./exercise5-resources/gateway.yaml
 ```
 ### Call Test services.
 To generate some load, we will reuse the job from exercise6.
@@ -54,7 +53,7 @@ kubectl delete job api-requests
 ```
 2. Submit the job
 ```
-kubectl apply -f ./exercise6-resources/test-services.yaml
+kubectl apply -f ./exercise5-resources/test-services.yaml
 ```
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
