@@ -20,7 +20,7 @@ In gateway we can enable and disable the trace using cwp `otel.traceEnabled`. Al
 Lets enable the trace for our service using url regx and also trace all context variables. We will exclude "Set Variable" assertion to reduce the noise.
 Add below cpws to Gateway custom resource at  _***spec.app.cwp.properties***_. 
 
-Continue using the Gateway CRD file from exercise6 [here](/exercise6-resources/gateway.yaml).
+Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml).
 
 ```
       - name: otel.traceEnabled
