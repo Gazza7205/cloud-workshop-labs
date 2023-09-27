@@ -57,7 +57,31 @@ Copy output from above command and use it to delete the pod. The Gateway operato
 ```
 kubectl delete pod xxxx
 ```
-3. Once the gateway is up. Call the test service at https://workshopuser(n).brcmlabs.com/test5 on browser or using curl.
+3. Once the gateway is up, Call the test service.
+```
+kubectl get svc
+
+NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
+ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
+
+if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
+
+NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
+ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
+```
+
+If EXTERNAL-IP is stuck in \<PENDING> state
+```
+kubectl port-forward svc/ssg 9443:9443
+```
+
+```
+curl https://34.89.84.69:8443/test5 -k
+
+or if you used port-forward
+
+curl https://localhost:9443/test5 -H "-k
+```
 
 ### Trace service on Jaeger
 1. Open [Jaeger](https://jaeger.brcmlabs.com/)
