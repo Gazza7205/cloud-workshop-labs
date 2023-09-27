@@ -122,7 +122,7 @@ We can now create/update our Gateway Custom Resource with the bundle and OTel re
 The base CRD can be found [here](/exercise5-resources/gateway.yaml).
 
 1. Add OTel annotation to the gateway container under _***spec.app***_. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. </br> __*Uncomment lines 11 to 14 and update the value of sidecar.opentelemetry.io/inject with workshop user number.*__
-```
+```yaml
 annotations:
     # Collector configuration CRD name.
     sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
@@ -132,7 +132,7 @@ annotations:
     instrumentation.opentelemetry.io/container-names: "gateway"
 ```
 2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Comment out line 23 and uncomment lines 14 to 27*__
-```
+```yaml
 bundle:
   - type: graphman
     source: secret
@@ -141,8 +141,8 @@ bundle:
 3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at _***spec.app.java.extraArgs***_.
 We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true/false
 Complete list of supported autinstumnetation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
-</br> __*Uncomment lines 71 to 75*__
-```
+</br> __*Uncomment lines 74 to 78*__
+```yaml
 - -Dotel.instrumentation.common.default-enabled=false
 - -Dotel.instrumentation.opentelemetry-api.enabled=true
 - -Dotel.instrumentation.runtime-metrics.enabled=true
@@ -152,8 +152,8 @@ Complete list of supported autinstumnetation library/framework can be found [her
 4. Add Open Telemetry cluster wide properties
 Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7_`. Also set resource attributes to capture.
 Add below cwp's at _***spec.app.cwp.properties***_
-</br> __*Uncomment lines 95 to 100*__
-```
+</br> __*Uncomment lines 98 to 103*__
+```yaml
 - name: otel.serviceMetricEnabled
     value: "true"
 - name: otel.metricPrefix
