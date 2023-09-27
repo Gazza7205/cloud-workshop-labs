@@ -1,63 +1,132 @@
-
-# Lab exercise 7
-This exercise we will make of Gateway Telemetry Tracing and identify the reason for a service failure. We have already created a sample error service as part of exercise 6 (/test5) 
+# Lab exercise 8
+This exercise introduces how to use external kubernetes secrets as Gateway Stored Passwords. [See other exercises](./readme.md#lab-exercises).
 
 ### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), we will re-use the test services.
+Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 4](./lab-exercise4.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
+
+You will have an updated gateway at this point, copy your gateway.yaml into [./exercise8-resources](./exercise8-resources/). Make sure that replicas is equal to 1 before applying.
 
 ## Key concepts
-- [Enable Tracing on Gateway](#enable-tracing-on-gateway)
+- [Create Kubernetes Secret](#create-kubernetes-secret)
+- [Configure the Gateway](#configure-the-gateway)
 - [Update the Gateway](#update-the-gateway)
-- [Trace service on Jaeger](#trace-service-on-jaeger)
+- [Inspect the Gateway](#inspect-the-gateway)
+- [Test your Gateway Deployment](#test-your-gateway-deployment)
 
-### Enable Tracing on Gateway
-We would like to control the amount of tracing so that it does not affect the Gateway performance and backend(Jaeger/Elastic search etc) disk space.
-In gateway we can enable and disable the trace using cwp `otel.traceEnabled`. Also, we need to configure which service to trace. This can be configured using `otel.traceConfig` cwp. This should in a json format. 
-1. Service(s) to trace can be specified by the url (regx) or service uid.
-2. Each assertion executed under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be included.
-3. Each span/assertion optionally have array of events/logs. They represent the context variables with values at the end of assertion execution. The assertion which need to trace the context variables need to be specified. By default none of the spans will have events with context variable values.
-
-Lets enable the trace for our service using url regx and also trace all context variables. We will exclude "Set Variable" assertion to reduce the noise.
-Add below cpws to Gateway custom resource at  _***spec.app.cwp.properties***_. 
-
-Continue using the Gateway CRD file from exercise6 [here](/exercise6-resources/gateway.yaml).
-
+### Important
+- open a new terminal and inspect the Layer7 Operator log
 ```
-      - name: otel.traceEnabled
-        value: "true"
-      - name: otel.traceConfig
-        value: |
-            {
-              "services": [
-                {"url": ".*/test.*"}
-              ],
-              "assertions": {
-                "exclude" : ["SetVariable"]
-              },
-              "contextVariables": {
-                "assertions" : [".*"]
-              }
-            }
+kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+```
+
+### Create Kubernetes Secret
+Kubernetes Secrets are stored as base64 encoded strings without any encryption, Graphman accepts encrypted values and decrypts them with either the clusterPassphrase or a user supplied passphrase.
+
+1. Encrypt a value (there may be a warning about the key deriviation which we will ignore for now.)
+```
+echo -n "myothersupersecretvalue" | openssl enc -aes-256-cbc -md sha256 -pass pass:7layer -a
+```
+output
+```
+U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+```
+
+2. Create a simple secret
+Note that mysupersecret2 is the encrypted value that we derived in the previous step. This provides encryption for this value at rest in Kubernetes.
+```
+kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+```
+3. Create the exercise 5 resources
+This step will create a graphman bundle that exposes a very simple endpoint that returns Gateway Stored Passwords in plaintext and enable access to the GCP Secret Manager via the external secrets operator.
+```
+kubectl apply -k ./exercise8-resources
+```
+In a few seconds there will be a secret called database-credentials-gcp created in your namespace. The [external secrets operator](https://external-secrets.io/latest/) creates a local copy of the external secret so that we can use it in Kubernetes. The external secrets operator has integrations for a variety of secret management [providers](https://external-secrets.io/latest/provider/aws-secrets-manager/).
+```
+kubectl get secret database-credentials-gcp -oyaml
+```
+
+### Configure the Gateway
+Update [gateway.yaml](./exercise8-resources/gateway.yaml). You may be using a gateway definition from a previous exercise, please ensure that replicas is set to 1.
+We need to add two things to this file
+
+- The new bundle we created
+```
+bundle:
+  ...
+  - type: graphman
+  source: secret
+  name: graphman-secret-reader-bundle
+```
+- External secret references
+```
+externalSecrets:
+  - name: database-credentials-gcp
+    enabled: true
+    description: GCP Database credentials
+    variableReferencable: true
+  - name: mysupersecrets
+    enabled: true
+    description: top secret
+    variableReferencable: true
+    encryption:
+      passphrase: 7layer
+      existingSecret: ""
+  - name: private-key-secret
+    enabled: true
+    description: a private key
+    variableReferencable: false
 ```
 
 ### Update the Gateway
-Apply the changes made to Gateway custom resource. 
+```
+kubectl apply -f ./exercise8-resources/gateway.yaml
+```
 
-1. Update the Gateway CR
+### Inspect the Gateway
+- Get pods
 ```
-kubectl apply -f ./exercise7-resources/gateway.yaml
+kubectl get pods
 ```
-2. As there is only an cwp changes. The gateway pod will not restart and hence pod need to deleted manually. In production, cwp change can be applied using a repository/graphman or restman
+output (wait for the ssg pod to hit READY 1/1 before proceeding to the next step)
+```
+NAME                                                 READY   STATUS    RESTARTS   AGE
+layer7-operator-controller-manager-6cb57584d-n9dlz   2/2     Running   0          4d1h
+ssg-6c56b6944b-hr497                                 1/1     Running   0          3h48m
+```
+- Get ssg pod
+```
+kubectl get pod ssg-6c56b6944b-hr497 -oyaml
+```
+output (annotations)
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    security.brcmlabs.com/external-secret-database-credentials-gcp: 0935885ac45ab667fa9a8c30e040e867eebafd6c
+    security.brcmlabs.com/external-secret-mysupersecrets: 2a9fa4811aa7037693b05795c202237862b10579
+    security.brcmlabs.com/external-secret-private-key-secret: a52bffc4382b47978308e72467b01e29b94f7c33
+    security.brcmlabs.com/l7-gw-myapis-dynamic: 8fc74669689abe781645dac214ebf26eb7480c78
+    security.brcmlabs.com/l7-gw-mysubscriptions-dynamic: 9daef7d1286dd13b609ada39ff1d6aa624ff64da
+  creationTimestamp: "2023-09-25T12:59:01Z"
+  generateName: ssg-6c56b6944b-
+  labels:
+    app.kubernetes.io/created-by: layer7-operator
+    app.kubernetes.io/managed-by: layer7-operator
+    app.kubernetes.io/name: ssg
+    app.kubernetes.io/part-of: ssg
+    management-access: leader
+    pod-template-hash: 6c56b6944b
+```
 
-Get pod name
+- Trigger an update
 ```
-kubectl get pods --no-headers -o custom-columns=":metadata.name" -l app.kubernetes.io/name=ssg
+kubectl edit pod ssg-74bc56d55c-cgctb
 ```
-Copy output from above command and use it to delete the pod. The Gateway operator will recreate the pod.
-```
-kubectl delete pod xxxx
-```
-3. Once the gateway is up, Call the test service.
+Update one of the checksums
+
+### Test your Gateway Deployment
 ```
 kubectl get svc
 
@@ -76,19 +145,49 @@ kubectl port-forward svc/ssg 9443:9443
 ```
 
 ```
-curl https://34.89.84.69:8443/test5 -k
+curl https://34.89.84.69:8443/secrets" -k
 
 or if you used port-forward
 
-curl https://localhost:9443/test5 -H "-k
+curl https://localhost:9443/secrets" -k
+
+```
+Response
+```
+{
+  "gcp-credentials": {
+     "database_username": "gateway",
+     "database_password": "7A6j7EyTVPKplTPh"
+   },
+  "local-credentials": {
+    "mysupersecret1": "mysupersecretvalue",
+    "mysupersecret2" "myothersupersecretvalue"
+  }
+}
 ```
 
-### Trace service on Jaeger
-1. Open [Jaeger](https://jaeger.brcmlabs.com/)
-2. Select the your service under Service dropdown (workshopuser(n)-ssg)
-3. Select 'age' in 'Operation' drop down box. The service name is age and url is /test5
-4. Select appropriate 'Lookback' time and click on 'Find Traces'
-5. Should result in some traces for the service. Click on any one of them.
-6. Walk through the spans and check for errors. Here, there is a javascript assertion error
+##### Sign into Policy Manager
+Policy Manager access is less relevant in a deployment like this because we haven't specified an external MySQL database, any changes that we make will only apply to the Gateway that we're connected to and won't survive a restart. It is still useful to check what's been applied. In our configuration we could set the following which would override the default application port configuration.
+```
+...
+listenPorts:
+  harden: true
+...
+```
+This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection. The [advanced example](../gateway/advanced-gateway.yaml) shows how this can be customised with your own ports.
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/5ff8a008-68e3-427f-8270-b33f1fc8e34b" /></kbd>
+```
+username: admin
+password: 7layer
+gateway: 35.189.116.20:9443
+```
+or if you used port-forward
+```
+username: admin
+password: 7layer
+gateway: localhost:9443
+```
+
+
+
+

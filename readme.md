@@ -51,10 +51,10 @@ No resources found in workshopuser(n) namespace.
 - [Exercise 4](./lab-exercise4.md)
   - This exercise combines the previous examples in more depth
 - [Exercise 5](./lab-exercise5.md)
-  - This exercise introduces External Secrets
-- [Exercise 6](./lab-exercise6.md)
   - This exercise enables Open Telemetry on gateway (service metrics and trace configuration)
-- [Exercise 7](./lab-exercise7.md)
+- [Exercise 6](./lab-exercise6.md)
   - This exercise introduces custom Telemetry assertion. (Global policy - message complete)
-- [Exercise 8](./lab-exercise8.md)
+- [Exercise 7](./lab-exercise7.md)
   - Find root cause for a service error using Open Telemetry trace.
+- [Exercise 8](./lab-exercise8.md)
+  - This exercise introduces External Secrets

@@ -1,187 +1,111 @@
+
 # Lab exercise 5
-This exercise introduces how to use external kubernetes secrets as Gateway Stored Passwords. [See other exercises](./readme.md#lab-exercises).
+This exercise help you to Observe Gateway using Open Telemetry Metrics, Traces and Logs. The lab environment has Open Telemetry Operator, [Kibana](https://kibana.brcmlabs.com/) and [Jaeger](https://jaeger.brcmlabs.com/) services pre-installed to monitor the Gateway.
 
 ### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 4](./lab-exercise4.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
-
-You will have an updated gateway at this point, copy your gateway.yaml into [./exercise5-resources](./exercise5-resources/). Make sure that replicas is equal to 1 before applying.
+Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 1](./lab-exercise1.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
 
 ## Key concepts
-- [Create Kubernetes Secret](#create-kubernetes-secret)
-- [Configure the Gateway](#configure-the-gateway)
+- [Open Telemetry Collector](#open-telemetry-collector)
+- [Create test services](#create-test-services)
+- [Configuring the Gateway](#configuring-the-gateway)
 - [Update the Gateway](#update-the-gateway)
-- [Inspect the Gateway](#inspect-the-gateway)
-- [Test your Gateway Deployment](#test-your-gateway-deployment)
+- [Call Test services](#call-test-services)
+- [Moitor Gateway](#moitor-gateway)
 
-### Important
-- open a new terminal and inspect the Layer7 Operator log
+### Open Telemetry Collector
+1. Update the [collector.yaml](/exercise5-resources/collector.yaml) as below and create it using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod.
+    1. Name (_***metadata.name***_) - 'workshopuser(n)-eck'
+    2. Resource name to uniquely identify the gateway installation (_***spec.config | processors.batch.resource.attributes[layer7gw.name].value***_)- 'workshopuser(n)-ssg'
 ```
-kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+kubectl apply -f ./exercise5-resources/collector.yaml
 ```
-
-### Create Kubernetes Secret
-Kubernetes Secrets are stored as base64 encoded strings without any encryption, Graphman accepts encrypted values and decrypts them with either the clusterPassphrase or a user supplied passphrase.
-
-1. Encrypt a value (there may be a warning about the key deriviation which we will ignore for now.)
+2. Update the instrumentation CRD [instrumentation.ymal](/exercise5-resources/instrumentation.yaml) as below and create it using kubectl. This will inject OTel agent into the Gateway deployment. Also, allows us to set agent configuration.
+    1. Service name (_***spec.env[OTEL_SERVICE_NAME].value***_)- 'workshopuser(n)-ssg'
 ```
-echo -n "myothersupersecretvalue" | openssl enc -aes-256-cbc -md sha256 -pass pass:7layer -a
-```
-output
-```
-U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+kubectl apply -f ./exercise5-resources/instrumentation.yaml
 ```
 
-2. Create a simple secret
-Note that mysupersecret2 is the encrypted value that we derived in the previous step. This provides encryption for this value at rest in Kubernetes.
+### Create test services
+To create some test services, we are going to bootstrap the gateway with a bundle.
+1. OTel test services.
+    1. /test1 - Always success. Calls another service /echotest and returns result from it.
+    2. /test2 - Always errors out with a policy error
+    3. /test3 - Always errors out with a routing error. Try’s to call an invalid backend service
+    4. /test4 - Always Success. No routing.    
+    5. /test5 - Takes two query parameters as input and calculate the age (years elapsed). It has some error and needs to be fixed.
+        i. dob - Date of birth - default format dd/MM/yyyy
+        ii. format (optional) - Specify the format of dob
+    6. /echotest - Returns system date and time.
+
+To create bundle as secret, we use Kustomize. This will aslo create a configmap which has a shell script to call these services. Execute to below command to create the granphman bundle secrets
+
 ```
-kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
-```
-3. Create the exercise 5 resources
-This step will create a graphman bundle that exposes a very simple endpoint that returns Gateway Stored Passwords in plaintext and enable access to the GCP Secret Manager via the external secrets operator.
-```
-kubectl apply -k ./exercise5-resources
-```
-In a few seconds there will be a secret called database-credentials-gcp created in your namespace. The [external secrets operator](https://external-secrets.io/latest/) creates a local copy of the external secret so that we can use it in Kubernetes. The external secrets operator has integrations for a variety of secret management [providers](https://external-secrets.io/latest/provider/aws-secrets-manager/).
-```
-kubectl get secret database-credentials-gcp -oyaml
+kubectl apply -k ./exercise5-resources/
 ```
 
-### Configure the Gateway
-Update [gateway.yaml](./exercise5-resources/gateway.yaml). You may be using a gateway definition from a previous exercise, please ensure that replicas is set to 1.
-We need to add two things to this file
+### Configuring the Gateway
+We can now create/update our Gateway Custom Resource with the bundle and OTel related configuration.
+The base CRD can be found [here](/exercise5-resources/gateway.yaml).
 
-- The new bundle we created
+1. Add OTel annotation to the gateway container under _***spec.app***_. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. Update the _***sidecar.opentelemetry.io/inject***_ value with workshop user number.
+```
+annotations:
+    # Collector configuration CRD name.
+    sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
+    # Container language type to inject appropriate agent.
+    instrumentation.opentelemetry.io/inject-java: "true"
+    # Container name to instrument
+    instrumentation.opentelemetry.io/container-names: "gateway"
+```
+2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets
 ```
 bundle:
-  ...
   - type: graphman
-  source: secret
-  name: graphman-secret-reader-bundle
+    source: secret
+    name: graphman-otel-test-services
 ```
-- External secret references
+3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at _***spec.app.java.extraArgs***_
+We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true/false
+Complete list of supported autinstumnetation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
 ```
-externalSecrets:
-  - name: database-credentials-gcp
-    enabled: true
-    description: GCP Database credentials
-  - name: mysupersecrets
-    enabled: true
-    description: top secret
-  - name: private-key-secret
-    enabled: true
-    description: a private key
+- -Dotel.instrumentation.common.default-enabled=false
+- -Dotel.instrumentation.opentelemetry-api.enabled=true
+- -Dotel.instrumentation.runtime-metrics.enabled=true
+- -Dotel.instrumentation.jdbc.enabled=true
+- -Dotel.instrumentation.jdbc-datasource.enabled=true
+```
+4. Add Open Telemetry cluster wide properties
+Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7_`. Also set resource attributes to capture.
+Add below cwp's at _***spec.app.cwp.properties***_
+
+```
+- name: otel.serviceMetricEnabled
+    value: "true"
+- name: otel.metricPrefix
+    value: l7_
+- name: otel.resourceAttributes
+    value: k8s.container.name,k8s.pod.name
 ```
 
 ### Update the Gateway
+Now that we've configured our Gateway Custom Resource to make Gateway Observable we can now send the updated manifest into Kubernetes. The Layer7 Operator will then reconcile our new desired state with reality.
+
+1. Update the Gateway CR
 ```
 kubectl apply -f ./exercise5-resources/gateway.yaml
 ```
-
-### Inspect the Gateway
-- Get pods
-```
-kubectl get pods
-```
-output (wait for the ssg pod to hit READY 1/1 before proceeding to the next step)
-```
-NAME                                                 READY   STATUS    RESTARTS   AGE
-layer7-operator-controller-manager-6cb57584d-n9dlz   2/2     Running   0          4d1h
-ssg-6c56b6944b-hr497                                 1/1     Running   0          3h48m
-```
-- Get ssg pod
-```
-kubectl get pod ssg-6c56b6944b-hr497 -oyaml
-```
-output (annotations)
-```
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    security.brcmlabs.com/external-secret-database-credentials-gcp: 0935885ac45ab667fa9a8c30e040e867eebafd6c
-    security.brcmlabs.com/external-secret-mysupersecrets: 2a9fa4811aa7037693b05795c202237862b10579
-    security.brcmlabs.com/external-secret-private-key-secret: a52bffc4382b47978308e72467b01e29b94f7c33
-    security.brcmlabs.com/l7-gw-myapis-dynamic: 8fc74669689abe781645dac214ebf26eb7480c78
-    security.brcmlabs.com/l7-gw-mysubscriptions-dynamic: 9daef7d1286dd13b609ada39ff1d6aa624ff64da
-  creationTimestamp: "2023-09-25T12:59:01Z"
-  generateName: ssg-6c56b6944b-
-  labels:
-    app.kubernetes.io/created-by: layer7-operator
-    app.kubernetes.io/managed-by: layer7-operator
-    app.kubernetes.io/name: ssg
-    app.kubernetes.io/part-of: ssg
-    management-access: leader
-    pod-template-hash: 6c56b6944b
-```
-
-- Trigger an update
-```
-kubectl edit pod ssg-74bc56d55c-cgctb
-```
-Update one of the checksums
-
-### Test your Gateway Deployment
-```
-kubectl get svc
-
-NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
-
-if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
-
-NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
-```
-
-If EXTERNAL-IP is stuck in \<PENDING> state
-```
-kubectl port-forward svc/ssg 9443:9443
-```
+### Call Test services.
+To generate some load, let’s run a job which will call the test services. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
 
 ```
-curl https://34.89.84.69:8443/secrets" -k
+kubectl apply -f ./exercise5-resources/test-services.yaml
+```
+### Monitor Gateway
+1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
+2. Search for 'Layer7 Gateway Dashboard' and click on the link.
+3. Select the Gateway you would to moniter in 'Gateway' dropdown (workshopuser(n)-ssg)
+4. You should be able to see the Gateway Service metrics along with jvm mertices on the dashboard.
 
-or if you used port-forward
-
-curl https://localhost:9443/secrets" -k
-
-```
-Response
-```
-{
-  "gcp-credentials": {
-     "database_username": "gateway",
-     "database_password": "7A6j7EyTVPKplTPh"
-   },
-  "local-credentials": {
-    "mysupersecret1": "mysupersecretvalue",
-    "mysupersecret2" "myothersupersecretvalue"
-  }
-}
-```
-
-##### Sign into Policy Manager
-Policy Manager access is less relevant in a deployment like this because we haven't specified an external MySQL database, any changes that we make will only apply to the Gateway that we're connected to and won't survive a restart. It is still useful to check what's been applied. In our configuration we could set the following which would override the default application port configuration.
-```
-...
-listenPorts:
-  harden: true
-...
-```
-This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection. The [advanced example](../gateway/advanced-gateway.yaml) shows how this can be customised with your own ports.
-
-```
-username: admin
-password: 7layer
-gateway: 35.189.116.20:9443
-```
-or if you used port-forward
-```
-username: admin
-password: 7layer
-gateway: localhost:9443
-```
 
 ### Start [Exercise 6](./lab-exercise6.md)
-
-

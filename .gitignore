@@ -3,3 +3,4 @@ license.xml
 kind-config.yaml
 runthrough.sh
 gateway-runthrough.yaml
+Dockerfile

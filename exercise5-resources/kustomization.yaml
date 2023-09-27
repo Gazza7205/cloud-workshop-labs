@@ -1,15 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-  - ./gcp-secret-manager/gcp-secret.yaml
-  - ./gcp-secret-manager/secrets-store-gcp.yaml
-  - ./gcp-secret-manager/external-secret-gcp-def.yaml
 generatorOptions:
  disableNameSuffixHash: true
 secretGenerator:
-- name: graphman-secret-reader-bundle
+- name: graphman-otel-test-services
   files:
-    - ./graphman-secret-reader-bundle.json
-- name: private-key-secret
+    - ./otel_test_services.json
+configMapGenerator:
+- name: send-api-requests-script
   files:
-    - privatekey=./private.key
+  - script=./send_api_requests.sh

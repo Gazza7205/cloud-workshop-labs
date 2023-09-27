@@ -14,46 +14,13 @@ spec:
     updateStrategy:
       type: rollingUpdate
       rollingUpdate:
-        maxUnavailable: 0
-        maxSurge: 2
-    externalSecrets: []
-    bundle:
-      - type: restman
-        source: secret
-        name: restman-cluster-property-bundle
-      - type: graphman
-        source: secret
-        name: graphman-cluster-property-bundle
+        maxUnavailable: 1
+        maxSurge: 0
+    bundle: []
     bootstrap:
       script:
-        enabled: true
-    singletonExtraction: false
-    repositoryReferences:
-      - name: l7-gw-myframework
-        enabled: true
-        type: static
-        encryption:
-          existingSecret: graphman-encryption-secret
-          key: FRAMEWORK_ENCRYPTION_PASSPHRASE
-      - name: l7-gw-myapis
-        enabled: true
-        type: dynamic
-        encryption:
-          existingSecret: graphman-encryption-secret
-          key: APIS_ENCRYPTION_PASSPHRASE
-      - name: l7-gw-mysubscriptions
-        enabled: true
-        type: dynamic
-        encryption:
-          existingSecret: graphman-encryption-secret
-          key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
-    initContainers:
-    - name: workshop-init
-      image: harbor.sutraone.com/mock/workshop-init:1.0.0
-      imagePullPolicy: IfNotPresent
-      volumeMounts:
-      - name: config-directory
-        mountPath: /opt/docker/custom
+        enabled: false
+    initContainers: []
     management:
       #secretName: gateway-secret
       username: admin
