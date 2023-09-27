@@ -23,21 +23,21 @@ Add below cpws to Gateway custom resource at  _***spec.app.cwp.properties***_.
 Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml).
 
 ```
-      - name: otel.traceEnabled
-        value: "true"
-      - name: otel.traceConfig
-        value: |
-            {
-              "services": [
-                {"url": ".*/test.*"}
-              ],
-              "assertions": {
-                "exclude" : ["SetVariable"]
-              },
-              "contextVariables": {
-                "assertions" : [".*"]
-              }
-            }
+- name: otel.traceEnabled
+  value: "true"
+- name: otel.traceConfig
+  value: |
+      {
+        "services": [
+          {"url": ".*/test.*"}
+        ],
+        "assertions": {
+          "exclude" : ["SetVariable"]
+        },
+        "contextVariables": {
+          "assertions" : [".*"]
+        }
+      }
 ```
 
 ### Update the Gateway
