@@ -21,8 +21,9 @@ Lets enable the trace for our service using url regx and also trace all context 
 Add below cpws to Gateway custom resource at  _***spec.app.cwp.properties***_. 
 
 Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml).
+</br> __**Uncomment lines from 104 to 118**__
 
-```
+```yaml
 - name: otel.traceEnabled
   value: "true"
 - name: otel.traceConfig
@@ -45,19 +46,22 @@ Apply the changes made to Gateway custom resource.
 
 1. Update the Gateway CR
 ```
-kubectl apply -f ./exercise7-resources/gateway.yaml
+kubectl apply -f ./exercise5-resources/gateway.yaml
 ```
 2. As there is only an cwp changes. The gateway pod will not restart and hence pod need to deleted manually. In production, cwp change can be applied using a repository/graphman or restman
-
 Get pod name
 ```
 kubectl get pods --no-headers -o custom-columns=":metadata.name" -l app.kubernetes.io/name=ssg
 ```
 Copy output from above command and use it to delete the pod. The Gateway operator will recreate the pod.
 ```
-kubectl delete pod xxxx
+kubectl delete pod <<pod_name>>
 ```
-3. Once the gateway is up, Call the test service.
+Wait until that the gateway is up
+```
+kubectl get pods
+```
+3. Once the gateway is up, call the test service using port-forward or external-ip address
 ```
 kubectl get svc
 
@@ -72,15 +76,32 @@ ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP
 
 If EXTERNAL-IP is stuck in \<PENDING> state
 ```
-kubectl port-forward svc/ssg 9443:9443
+kubectl port-forward svc/ssg 8443:8443
 ```
-
+In another terminal make a curl call
 ```
 curl https://34.89.84.69:8443/test5 -k
-
+```
 or if you used port-forward
+```
+curl https://localhost:8443/test5 -k
+```
+Output
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    <soapenv:Body>
+        <soapenv:Fault>
+            <faultcode>soapenv:Server</faultcode>
+            <faultstring>Policy Falsified</faultstring>
+            <faultactor>https://localhost:8443/test5</faultactor>
+            <detail>
+                <l7:policyResult status="Error in Assertion Processing" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
+            </detail>
+        </soapenv:Fault>
+    </soapenv:Body>
+</soapenv:Envelope>
 
-curl https://localhost:9443/test5 -H "-k
 ```
 
 ### Trace service on Jaeger
