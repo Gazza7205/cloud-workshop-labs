@@ -13,11 +13,11 @@ echo "Press Ctrl + C to cancel"
 # Send request to random endpoints.
 a=0
 while [ $a -lt 1000 ]; do
-	rand_index=$((RANDOM % ${#GATEWAY_SERVICE_URL[@]}))
-	org_index=$((RANDOM % ${#ORG_ID[@]}))
-	curl --silent --show-error https://$GATEWAY_HOSTNAME:${GATEWAY_PORT}/${GATEWAY_SERVICE_URL[$rand_index]}?orgid=${ORG_ID[$org_index]}  --insecure >/dev/null
-	echo $a
-	a=$(expr $a + 1)
+  rand_index=$((RANDOM % ${#GATEWAY_SERVICE_URL[@]}))
+  org_index=$((RANDOM % ${#ORG_ID[@]}))
+  curl --silent --show-error https://$GATEWAY_HOSTNAME:${GATEWAY_PORT}/${GATEWAY_SERVICE_URL[$rand_index]}?orgid=${ORG_ID[$org_index]}  --insecure >/dev/null
+  echo $a
+  a=$(expr $a + 1)
 done
 
 exit 0
