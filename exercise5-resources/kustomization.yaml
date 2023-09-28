@@ -1,12 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+resources:
+  - ./api-request-configmap.yaml
 generatorOptions:
  disableNameSuffixHash: true
 secretGenerator:
 - name: graphman-otel-test-services
   files:
     - ./otel_test_services.json
-configMapGenerator:
-- name: send-api-requests-script
-  files:
-  - script=./send_api_requests.sh
+# configMapGenerator:
+# - name: send-api-requests-script
+#   files:
+#   - script=./send_api_requests.sh
