@@ -130,7 +130,7 @@ annotations:
     # Container name to instrument
     instrumentation.opentelemetry.io/container-names: "gateway"
 ```
-2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Uncomment line 23-26*__
+2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Commnetout line 23 and Uncomment lines 24-27*__
 ```yaml
 bundle:
   - type: graphman
