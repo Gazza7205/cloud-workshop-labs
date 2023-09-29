@@ -111,10 +111,9 @@ To create some test services, we are going to bootstrap the gateway with a bundl
         ii. format (optional) - Specify the format of dob
     6. /echotest - Returns system date and time.
 
-To create bundle as secret, we use Kustomize. This will aslo create a configmap which has a shell script to call these services. Execute to below command to create the granphman bundle secrets
-
+Create bundle as secret.
 ```
-kubectl apply -k ./exercise5-resources/
+kubectl create secret generic graphman-otel-test-services  --from-file=./exercise5-resources/otel_test_services.json 
 ```
 
 ### Configuring the Gateway
@@ -170,11 +169,16 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 kubectl apply -f ./exercise5-resources/gateway.yaml
 ```
 ### Call Test services.
-To generate some load, let’s run a job which will call the test services. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
+1. Create configmap with script to call the test services
+```
+kubectl apply -f ./exercise5-resources/api-request-configmap.yaml
+```
 
+2. Create a job to execute the script.
 ```
 kubectl apply -f ./exercise5-resources/test-services.yaml
 ```
+
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Layer7 Gateway Dashboard' and click on the link.
