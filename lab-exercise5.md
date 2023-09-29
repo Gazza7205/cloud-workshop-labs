@@ -14,7 +14,7 @@ Please perform the steps [here](./readme.md#before-you-start) to configure your 
 - [Moitor Gateway](#moitor-gateway)
 
 ### Open Telemetry Collector
-1. Create OTel collector custom resoiurce as below using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod. Make sure you update the yaml as below
+1. Create OTel collector custom resource as below using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod. Make sure you update the yaml as below
     1. Name (_***metadata.name***_) - 'workshopuser(n)-eck'
     2. Resource name - To uniquely identify the gateway installation (_***spec.config | processors.batch.resource.attributes[layer7gw.name].value***_)- 'workshopuser(n)-ssg'
 ```yaml
