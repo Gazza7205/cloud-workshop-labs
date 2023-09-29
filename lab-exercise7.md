@@ -60,8 +60,8 @@ kubectl get pods
 ```
 ### Invoke service.
 1. The service (age) calculates age. Takes two optional inputs as query parameters
-  1. dob -  02/08/1982 defaults to system date.
-  2. format - default MM/dd/yyyy
+    1. dob -  02/08/1982 defaults to system date.
+    2. format - default MM/dd/yyyy
 
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/dc9343e8-b452-489e-bc83-7201a30a6d51" /></kbd>
 
@@ -89,7 +89,7 @@ curl https://34.89.84.69:8443/test5 -k
 ```
 or if you used port-forward
 ```
-curl https://localhost:8443/test5?dob -k
+curl https://localhost:8443/test5 -k
 ```
 Output
 ```xml
