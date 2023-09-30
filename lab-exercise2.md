@@ -291,7 +291,7 @@ management:
   secretName: gateway-secret
 ```
 2. Bundles
-line 26
+line 26 - replace the empty array with the following bundles that we created.
 ```
 bundle:
   - type: restman
@@ -302,7 +302,7 @@ bundle:
     name: graphman-cluster-property-bundle
 ```
 3. initContainers
-line 30
+line 27 - enable the bootstrap script and add an initContainer
 ```
 bootstrap:
   script:
@@ -329,7 +329,16 @@ kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-mana
 kubectl apply -f ./exercise2-resources/gateway.yaml
 ```
 
-3. Login to Policy Manager
+3. Test the bootstrapped service
+```
+curl https://34.168.26.20:8443/helloworld -k
+```
+output
+```
+Hello World!
+```
+
+4. Login to Policy Manager
 
 - To get the Gateway address run the following command
 ```

@@ -273,7 +273,7 @@ listenPorts:
   harden: true
 ...
 ```
-This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection. The [advanced example](../gateway/advanced-gateway.yaml) shows how this can be customised with your own ports.
+This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection.
 
 ```
 username: admin
