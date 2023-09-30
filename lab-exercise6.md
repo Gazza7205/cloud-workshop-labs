@@ -1,6 +1,6 @@
 
 # Lab exercise 6
-In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of apis by organization. [See other exercises](./readme.md#lab-exercises).
+In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 5, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of apis by organization. [See other exercises](./readme.md#lab-exercises).
 
 ### This exercise requires pre-requisites
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 5](./lab-exercise5.md), and is a pre-requisite.
@@ -69,7 +69,7 @@ kubectl apply -f ./exercise5-resources/test-services.yaml
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Usage By Org' and click on the link.
-3. Select the Gateway you would like to monitor in 'Gateway' dropdown (workshopuser(n)-ssg)
+3. Select your Gateway from the 'Gateway' dropdown (workshopuser(n)-ssg)
 4. You should be able to see chart with api usage by organization as below.
 
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/3084109f-fbb0-4471-986c-f8b71d65b819" /></kbd>
