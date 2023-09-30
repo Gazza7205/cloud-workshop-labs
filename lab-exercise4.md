@@ -43,7 +43,7 @@ l7-gw-mysubscriptions   67s
 ### Configure Repository References
 Here we will configure repository references for our Gateway custom resource. Repository references are used by the Gateway controller to reconcile the resulting graphman bundles from our repositories to Gateways. This is tracked using annotations that are applied to each gateway pod (in ephemeral mode) or deployment (when there is a MySQL database configured).
 
-- Open [gateway.yaml](./exercise4-resources/gateway.yaml) and configure repository references on line 30
+- Open [gateway.yaml](./exercise4-resources/gateway.yaml) and configure repository references on line 37
 ```
 repositoryReferences:
   - name: l7-gw-myframework
@@ -86,7 +86,7 @@ kubectl create secret generic graphman-encryption-secret --from-env-file=./exerc
 ```
 
 ### Singleton Configs
-You will see a config option called singletonExtraction on line 29 in [gateway.yaml](./exercise4-resources/gateway.yaml). Singletons in this context are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. It's easy to track this when there's an external MySQL database. In ephemeral mode, gateways have no awareness of additional cluster nodes or deployments.
+You will see a config option called singletonExtraction on line 36 in [gateway.yaml](./exercise4-resources/gateway.yaml). Singletons in this context are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. It's easy to track this when there's an external MySQL database. In ephemeral mode, gateways have no awareness of additional cluster nodes or deployments.
 
 Singleton Extraction aims to mitigate this by designating one gateway pods as a leader and only applying scheduled tasks and jms listeners to that pod. This comes with a current limitation to dynamic repository references only. 
 

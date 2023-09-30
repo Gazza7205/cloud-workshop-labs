@@ -130,7 +130,7 @@ annotations:
     # Container name to instrument
     instrumentation.opentelemetry.io/container-names: "gateway"
 ```
-2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Commnetout line 23 and Uncomment lines 24-27*__
+2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Comment out line 30 and Uncomment lines 31-34*__
 ```yaml
 bundle:
   - type: graphman
@@ -139,8 +139,8 @@ bundle:
 ```
 3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at _***spec.app.java.extraArgs***_.
 We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true/false
-Complete list of supported autinstumnetation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
-</br> __*Uncomment lines 74 to 78*__
+Complete list of supported auto instumentation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
+</br> __*Uncomment lines 81 to 85*__
 ```yaml
 - -Dotel.instrumentation.common.default-enabled=false
 - -Dotel.instrumentation.opentelemetry-api.enabled=true
@@ -151,7 +151,7 @@ Complete list of supported autinstumnetation library/framework can be found [her
 4. Add Open Telemetry cluster wide properties
 Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7_`. Also set resource attributes to capture.
 Add below cwp's at _***spec.app.cwp.properties***_
-</br> __*Uncomment lines 98 to 103*__
+</br> __*Uncomment lines 105 to 110*__
 ```yaml
 - name: otel.serviceMetricEnabled
     value: "true"

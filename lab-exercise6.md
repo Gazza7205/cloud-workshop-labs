@@ -24,10 +24,10 @@ kubectl create secret generic graphman-otel-message-complete --from-file=./exerc
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
 ### Configuring the Gateway
-Continue using the Gateway CRD file from exercise5 [here](./exercise5-resources/gateway.yaml)
+Continue using the Gateway CRD file from exercise 5 [here](./exercise5-resources/gateway.yaml)
 
 1. Add message complete secret bundle to _***spec.app.bundle***_
-</br> __* Uncomment lines 28 to 30 *__
+</br> __* Uncomment lines 35 to 37 *__
 ```yaml
 bundle:
   - type: graphman

@@ -285,13 +285,13 @@ For this we will be configuring [gateway.yaml](./exercise2-resources/gateway.yam
 
 1. Gateway Management Secret
 
-uncomment line 25 and remove username/password
+uncomment line 32 and remove username/password
 ```
 management:
   secretName: gateway-secret
 ```
 2. Bundles
-line 19
+line 26
 ```
 bundle:
   - type: restman
@@ -301,8 +301,8 @@ bundle:
     source: secret
     name: graphman-cluster-property-bundle
 ```
-3. initContainer
-line 20
+3. initContainers
+line 30
 ```
 bootstrap:
   script:
