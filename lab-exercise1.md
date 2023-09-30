@@ -56,6 +56,13 @@ spec:
       cluster:
         password: 7layer
         hostname: gateway.brcmlabs.com
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 2
+      limits:
+        memory: 4Gi
+        cpu: 2
     service:
       # annotations:
       type: LoadBalancer

@@ -329,18 +329,7 @@ kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-mana
 kubectl apply -f ./exercise2-resources/gateway.yaml
 ```
 
-3. Test the bootstrapped service
-```
-curl https://34.168.26.20:8443/helloworld -k
-```
-output
-```
-Hello World!
-```
-
-4. Login to Policy Manager
-
-- To get the Gateway address run the following command
+3. Get the Gateway Loadbalancer address
 ```
 kubectl get svc ssg
 ```
@@ -349,6 +338,17 @@ output
 NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)                         AGE
 ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
+
+4. Test the bootstrapped service
+```
+curl https://34.168.26.20:8443/helloworld -k
+```
+output
+```
+Hello World!
+```
+
+5. Login to Policy Manager
 
 - Open Policy Manager and view the bootstrapped components.
 ```
