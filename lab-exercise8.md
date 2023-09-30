@@ -145,11 +145,11 @@ kubectl port-forward svc/ssg 9443:9443
 ```
 
 ```
-curl https://34.89.84.69:8443/secrets" -k
+curl https://34.89.84.69:8443/secrets -k
 
 or if you used port-forward
 
-curl https://localhost:9443/secrets" -k
+curl https://localhost:9443/secrets -k
 
 ```
 Response

@@ -17,11 +17,11 @@ In gateway we can enable and disable the trace using cwp `otel.traceEnabled`. Al
 2. Each assertion executed under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be included.
 3. Each span/assertion optionally have array of events/logs. They represent the context variables with values at the end of assertion execution. The assertion which need to trace the context variables need to be specified. By default none of the spans will have events with context variable values.
 
-Lets enable the trace for our service using url regx and also trace all context variables. We will exclude "Set Variable" assertion to reduce the noise.
+Lets enable the trace for our service using url regx and also trace all context variables. 
 Add below cpws to Gateway custom resource at  _***spec.app.cwp.properties***_. 
 
 Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml).
-</br> __**Uncomment lines from 104 to 118**__
+</br> __**Uncomment lines from 104 to 115**__
 
 ```yaml
 - name: otel.traceEnabled
@@ -32,9 +32,6 @@ Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/g
         "services": [
           {"url": ".*/test.*"}
         ],
-        "assertions": {
-          "exclude" : ["SetVariable"]
-        },
         "contextVariables": {
           "assertions" : [".*"]
         }
@@ -61,7 +58,15 @@ Wait until that the gateway is up
 ```
 kubectl get pods
 ```
-3. Once the gateway is up, call the test service using port-forward or external-ip address
+### Invoke service.
+1. The service (age) calculates age. Takes two optional inputs as query parameters
+    1. dob -  02/08/1982 defaults to system date.
+    2. format - default MM/dd/yyyy
+
+<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/dc9343e8-b452-489e-bc83-7201a30a6d51" /></kbd>
+
+
+2. Once the gateway is up, call the test service using port-forward or external-ip address
 ```
 kubectl get svc
 

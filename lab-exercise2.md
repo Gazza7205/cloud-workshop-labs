@@ -285,7 +285,7 @@ For this we will be configuring [gateway.yaml](./exercise2-resources/gateway.yam
 
 1. Gateway Management Secret
 
-uncomment line 24 and remove username/password
+uncomment line 25 and remove username/password
 ```
 management:
   secretName: gateway-secret
