@@ -139,7 +139,7 @@ bundle:
 ```
 3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at _***spec.app.java.extraArgs***_.
 We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true/false
-Complete list of supported auto instumentation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
+Complete list of supported auto instrumentation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
 </br> __*Uncomment lines 81 to 85*__
 ```yaml
 - -Dotel.instrumentation.common.default-enabled=false
