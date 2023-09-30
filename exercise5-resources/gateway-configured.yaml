@@ -23,10 +23,20 @@ spec:
       rollingUpdate:
         maxUnavailable: 1
         maxSurge: 0
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 2
+      limits:
+        memory: 4Gi
+        cpu: 2
     bundle:
       - type: graphman
         source: secret
         name: graphman-otel-test-services
+      - type: graphman
+        source: secret
+        name: graphman-otel-message-complete
     bootstrap:
       script:
         enabled: false
@@ -100,6 +110,21 @@ spec:
           value: l7_
         - name: otel.resourceAttributes
           value: k8s.container.name,k8s.pod.name
+        - name: otel.traceEnabled
+          value: "true"
+        - name: otel.traceConfig
+          value: |
+              {
+                "services": [
+                  {"url": ".*/test.*"}
+                ],
+                "assertions": {
+                  "exclude" : ["SetVariable"]
+                },
+                "contextVariables": {
+                  "assertions" : [".*"]
+                }
+              }
     system:
       properties: |-
         # Default Gateway system properties

@@ -36,7 +36,7 @@ Note that mysupersecret2 is the encrypted value that we derived in the previous 
 ```
 kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
 ```
-3. Create the exercise 5 resources
+3. Create the exercise 8 resources
 This step will create a graphman bundle that exposes a very simple endpoint that returns Gateway Stored Passwords in plaintext and enable access to the GCP Secret Manager via the external secrets operator.
 ```
 kubectl apply -k ./exercise8-resources

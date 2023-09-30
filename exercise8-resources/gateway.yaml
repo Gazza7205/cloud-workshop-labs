@@ -14,8 +14,15 @@ spec:
     updateStrategy:
       type: rollingUpdate
       rollingUpdate:
-        maxUnavailable: 0
-        maxSurge: 2
+        maxUnavailable: 1
+        maxSurge: 0
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 2
+      limits:
+        memory: 4Gi
+        cpu: 2
     externalSecrets: []
     bundle:
       - type: restman

@@ -20,6 +20,13 @@ spec:
       rollingUpdate:
         maxUnavailable: 1
         maxSurge: 0
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 2
+      limits:
+        memory: 4Gi
+        cpu: 2
     bundle: []
     # bundle:
     # - type: graphman

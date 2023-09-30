@@ -1,6 +1,6 @@
 
 # Lab exercise 7
-This exercise we will make of Gateway Telemetry Tracing and identify the reason for a service failure. We have already created a sample error service as part of exercise 6 (/test5) 
+In this exercise we will make of Gateway Telemetry Tracing and identify the reason for a service failure. We have already created a sample error service as part of exercise 6 (/test5) 
 
 ### This exercise requires pre-requisites
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), we will re-use the test services.

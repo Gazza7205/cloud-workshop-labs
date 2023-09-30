@@ -1,9 +1,9 @@
 
 # Lab exercise 5
-This exercise help you to Observe Gateway using Open Telemetry Metrics, Traces and Logs. The lab environment has Open Telemetry Operator, [Kibana](https://kibana.brcmlabs.com/) and [Jaeger](https://jaeger.brcmlabs.com/) services pre-installed to monitor the Gateway.
+In this exercise you will Observe your Gateway using Open Telemetry Metrics, Traces and Logs. The lab environment has the Open Telemetry Operator, [Kibana](https://kibana.brcmlabs.com/) and [Jaeger](https://jaeger.brcmlabs.com/) services pre-installed to monitor the Gateway. [See other exercises](./readme.md#lab-exercises).
 
 ### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 1](./lab-exercise1.md) and is a pre-requisite for this.
+Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 4](./lab-exercise4.md) and is a pre-requisite for this.
 
 ## Key concepts
 - [Open Telemetry Collector](#open-telemetry-collector)
@@ -11,10 +11,10 @@ Please perform the steps [here](./readme.md#before-you-start) to configure your 
 - [Configuring the Gateway](#configuring-the-gateway)
 - [Update the Gateway](#update-the-gateway)
 - [Call Test services](#call-test-services)
-- [Moitor Gateway](#moitor-gateway)
+- [Monitor Gateway](#monitor-gateway)
 
 ### Open Telemetry Collector
-1. Create OTel collector custom resoiurce as below using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod. Make sure you update the yaml as below
+1. Create an OTel collector custom resource. This OTel collector configuration is used to inject an OTel Collector sidecar in the gateway pod. Make sure you update the yaml as below
     1. Name (_***metadata.name***_) - 'workshopuser(n)-eck'
     2. Resource name - To uniquely identify the gateway installation (_***spec.config | processors.batch.resource.attributes[layer7gw.name].value***_)- 'workshopuser(n)-ssg'
 ```yaml
@@ -47,7 +47,7 @@ spec:
         tls:
           insecure_skip_verify: true
         headers:
-          Authorization: "Bearer q85KTYR5jgFXWk196j2bI455"
+          Authorization: "Bearer 4c3K0d9UP05C6nicW5Wl8rC7"
       jaeger:
         endpoint: jaeger-cloud-workshop-collector-headless.observability.svc.cluster.local:14250
         tls:
@@ -170,7 +170,7 @@ Now that we've configured our Gateway Custom Resource to make Gateway Observable
 kubectl apply -f ./exercise5-resources/gateway.yaml
 ```
 ### Call Test services.
-To generate some load, let’s run a job which will call the test services. We will use the config map which we have created above using kustomie (send-api-requests-script) as a volume mount and execute the script.
+To generate some load, let’s run a job which will call the test services. We will use the config map which we have created above using kustomize (send-api-requests-script) as a volume mount and execute the script.
 
 ```
 kubectl apply -f ./exercise5-resources/test-services.yaml
@@ -178,8 +178,8 @@ kubectl apply -f ./exercise5-resources/test-services.yaml
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Layer7 Gateway Dashboard' and click on the link.
-3. Select the Gateway you would to moniter in 'Gateway' dropdown (workshopuser(n)-ssg)
-4. You should be able to see the Gateway Service metrics along with jvm mertices on the dashboard.
+3. Select your Gateway from the 'Gateway' dropdown (workshopuser(n)-ssg)
+4. You should be able to see the Gateway Service metrics along with jvm metrics on the dashboard.
 
 
 ### Start [Exercise 6](./lab-exercise6.md)
