@@ -7,6 +7,7 @@ Make sure that you've downloaded your kubeconfig (cloud workshop kubernetes envi
 - Navigate to [this box](https://ent.box.com/s/aeeiqiuhju0pb3xp1dgwbgrhb54j7l0p) link
     - Download the workshopuser(n).kubeconfig that corresponds to the number you were assigned
 - Test your kubeconfig
+    - Download the Gateway v11.x license [here](https://ent.box.com/s/h4zd4vs2c3vr0n6ze38nqoeyytm0cvfx)
 ```
 kubectl get all --kubeconfig /path/to/workshopuser(n).kubeconfig
 ```
