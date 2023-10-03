@@ -4,7 +4,7 @@ This repository contains step-by-step instructions for the Cloud Workshop Labs.
 ## Before you start
 Make sure that you've downloaded your kubeconfig (cloud workshop kubernetes environment access) and configured kubectl to use it.
 
-- Navigate to [this box](https://broadcom.ent.box.com/folder/224687821346) link
+- Navigate to [this box](https://ent.box.com/s/aeeiqiuhju0pb3xp1dgwbgrhb54j7l0p) link
     - Download the workshopuser(n).kubeconfig that corresponds to the number you were assigned
 - Test your kubeconfig
 ```
