@@ -7,7 +7,7 @@ spec:
   enabled: true
   endpoint: https://github.com/Gazza7205/l7GWMyAPIs
   branch: main
-  auth:
-    vendor: Github
-    username: gazza7205
-    token: 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
+  auth: {}
+    # vendor: Github
+    # username: gazza7205
+    # token: github_pat

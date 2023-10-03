@@ -75,10 +75,7 @@ spec:
   enabled: true
   endpoint: https://github.com/Gazza7205/l7GWMyAPIs
   branch: main
-  auth:
-    vendor: Github
-    username: gazza7205
-    token: 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
+  auth: {}
 EOF
 ```
 
@@ -105,10 +102,7 @@ metadata:
   resourceVersion: "1520888"
   uid: 2c3d927f-62ab-488f-8bf2-d281026895c6
 spec:
-  auth:
-    token: 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
-    username: gazza7205
-    vendor: Github
+  auth: {}
   branch: main
   enabled: true
   endpoint: https://github.com/Gazza7205/l7GWMyAPIs
