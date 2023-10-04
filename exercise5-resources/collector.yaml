@@ -26,7 +26,7 @@ spec:
         tls:
           insecure_skip_verify: true
         headers:
-          Authorization: "Bearer q85KTYR5jgFXWk196j2bI455"
+          Authorization: "Bearer 4c3K0d9UP05C6nicW5Wl8rC7"
       jaeger:
         endpoint: jaeger-cloud-workshop-collector-headless.observability.svc.cluster.local:14250
         tls:
