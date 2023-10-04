@@ -90,7 +90,7 @@ spec:
     - name: OTEL_TRACES_EXPORTER
       value: otlp
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.version=11.0.00,deployment.environment=development
+      value: service.version=11.1.00,deployment.environment=cloud-workshop
   exporter:
     endpoint: http://localhost:4317
   propagators:
