@@ -8,41 +8,53 @@ Make sure that you've downloaded your kubeconfig (cloud workshop kubernetes envi
     - Download the workshopuser(n).kubeconfig that corresponds to the number you were assigned
 - Test your kubeconfig
     - Download the Gateway v11.x license [here](https://ent.box.com/s/h4zd4vs2c3vr0n6ze38nqoeyytm0cvfx)
-```
-kubectl get all --kubeconfig /path/to/workshopuser(n).kubeconfig
-```
-- Update the KUBECONFIG environment variable
-This will remove the need to use the --kubeconfig flag for every command
---------------------------------------------
-- Linux/MacOS
-```
-export KUBECONFIG=/path/to/workshopuser(n).kubeconfig
-```
-The default location of the kubeconfig file in Linux/MacOS is
-```
-~/.kube/config
-```
-- Windows
-```    
-set KUBECONFIG=/path/to/workshopuser(n).kubeconfig
-```
-The default location of the kubeconfig file in Windows is
-```
-%USERPROFILE%\.kube\config
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  kubectl get all --kubeconfig /path/to/workshopuser(n).kubeconfig
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  kubectl get all --kubeconfig c:\path\to\workshopuser(n).kubeconfig
+  ```
+</details>
+<br/>
+
+- Update the KUBECONFIG environment variable to point to the kubeconfig file downloaded from Box. This will remove the need to use the --kubeconfig flag for every command.
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  export KUBECONFIG=~/.kube/workshopuser(n).kubeconfig
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```    
+  set KUBECONFIG=%USERPROFILE%\.kube\workshopuser(n).kubeconfig
+  ```
+</details>
+<br/>
 
 - Retest your kubeconfig
 ```
 kubectl get all
 ```
 
-### NOTE: There should be no resources in your namespace
+### NOTE: There should be no resources in your namespace at the beginning of the workshop
 Testing your kubeconfig should return the following
 ```
 No resources found in workshopuser(n) namespace.
 ```
 
 # Lab Exercises
+- [Exercise 0](./lab-exercise0.md)
+  - This exercise explores configuration as code concepts using Graphman.
 - [Exercise 1](./lab-exercise1.md)
   - This exercise should familiarize you with the basic concepts of the Layer7 Operator.
 - [Exercise 2](./lab-exercise2.md)

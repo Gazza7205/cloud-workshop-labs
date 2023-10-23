@@ -7,7 +7,7 @@ in kubernetes as part of the following examples.
 
 ### Effective APIs
 
-We have a development and a production gateway. They are divergent. You can appreciate this divergence by calling the
+We have a development and a production gateway. They are divergent. You can see this divergence by calling the
 same API on both environments as below.
 
 Call API in dev:
@@ -26,8 +26,7 @@ an environment that has been used in a prior workshop, the difference between de
 may not exist as it may have been reconciled ahead of time. The instructor can reset the
 state of dev and prod by deleting the respective gw pods.
 
-You should see different responses between dev and prod which is a reflection that the respective Layer7 gateway
-configuration is divergent.
+You should see different responses between dev and prod which is a reflection that the respective gateway configuration is divergent.
 
 ### Understanding how the example gateway configuration is structured
 
@@ -79,13 +78,25 @@ To get started with Graphman, get the client:
 git clone https://github.com/Layer7-Community/graphman-client.git
 ```
 
-Set the graphman home
+Set the graphman home:
 
-```
-export GRAPHMAN_HOME=~/your_graphman_path
-```
+<details>
+  <summary>Linux/MacOS</summary>
 
-Point graphman to the development environment by editing graphman.configuration
+  ```
+  export GRAPHMAN_HOME=~/your_graphman_path
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  set GRAPHMAN_HOME=%USERPROFILE%\your_graphman_path
+  ```
+</details>
+<br/>
+
+Point graphman to the development environment by editing graphman.configuration:
 
 ```
 {
@@ -114,9 +125,22 @@ Using the graphman client, you can pull configuration from the development envir
 
 Pulling the entire configuration from the gateway is all-encompassing and non discriminate. You will get more
 configuration than you are interested in, but it is still a common starting point.
-```
-$GRAPHMAN_HOME/graphman.sh export --using all --output totalDevEnv.json
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  $GRAPHMAN_HOME/graphman.sh export --using all --output totalDevEnv.json
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\graphman.bat export --using all --output totalDevEnv.json
+  ```
+</details>
+<br/>
+
 Some of the configuration returned is local details which are managed locally at each target deployments. This includes
 the main key for the gateway, the local administrator account, the listening ports which are set locally, etc. You can
 'trim' unwanted configuration to boil it down to the area of interest.
@@ -124,6 +148,8 @@ the main key for the gateway, the local administrator account, the listening por
 In the following set of commands, we are taking the total configuration which we just extracted, then export it to 
 a folder named base in an exploded form. Then we remove from the configuration the entities which are meant to be local.
 And finally we re-implode the configuration into a new config bundle named trimmed.json.
+<details>
+  <summary>Linux/MacOS</summary>
 
 ```
 $GRAPHMAN_HOME/graphman.sh explode --input totalDevEnv.json --output base
@@ -135,6 +161,23 @@ rm base/clusterProperties/cluster.hostname.json
 rm base/clusterProperties/keyStore.defaultSsl.alias.json
 $GRAPHMAN_HOME/graphman.sh implode --input base --output trimmed.json
 ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+```
+%GRAPHMAN_HOME%\graphman.bat explode --input totalDevEnv.json --output base
+rmdir /S/Q base\listenPorts
+rmdir /S/Q base\internalUsers
+del /Q base\Gateway*webapi.json
+del /Q base\keys\ssl.json
+del /Q base\clusterProperties\cluster.hostname.json 
+del /Q base\clusterProperties\keyStore.defaultSsl.alias.json
+%GRAPHMAN_HOME%\graphman.bat implode --input base --output trimmed.json
+
+```
+</details>
+<br/>
 
 ### Pull by folder and dependencies
 
@@ -146,29 +189,78 @@ suffix. This tells graphman to pull not only the entities under that folder, but
 dependencies for example, an object that does not show up in the folder structure but that a policy refers to, such as
 a jdbc connection.
 
-```
-$GRAPHMAN_HOME/graphman.sh export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  $GRAPHMAN_HOME/graphman.sh export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\graphman.bat export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
+  ```
+</details>
+<br/>
 
 ### Using specialized queries
 
 Graphman is a graphQL API and its client is packaged with preset queries. A power user can, however, craft their own
 queries to tailor their specific re-usable need. To augment graphman with your own query, take a look at the folder
-```
-$GRAPHMAN_HOME/queries
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  $GRAPHMAN_HOME/queries
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\queries
+  ```
+</details>
+<br/>
+
 An example custom query that you can use in this example is located under configAsCode. You can add it to your graphman
 toolbox by copying it in the right folder:
 
-```
-cp $GRAPHMAN_HOME/configAsCode/plansCWPs.* $GRAPHMAN_HOME/queries
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  cp $GRAPHMAN_HOME/configAsCode/plansCWPs.* $GRAPHMAN_HOME/queries
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  copy %GRAPHMAN_HOME%\configAsCode\plansCWPs.* %GRAPHMAN_HOME%\queries
+  ```
+</details>
+<br/>
 
 You can now use this query which lets you extract the CWPs that control the SLA memberships:
 
-```
-$GRAPHMAN_HOME/graphman.sh export --using plansCWPs --output memberships.json
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  $GRAPHMAN_HOME/graphman.sh export --using plansCWPs --output memberships.json
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\graphman.bat export --using plansCWPs --output memberships.json
+  ```
+</details>
+<br/>
 
 ## Config bundle arithmetics
 
@@ -177,25 +269,49 @@ our of the framework configuration bundle. Because we constructed the framework 
 and that the CWPs that control the memberships are dependencies, they are automatically included. Using the diff
 command, you can eliminate this overlap between the two bundles:
 
-```
-$GRAPHMAN_HOME/graphman.sh diff --input frameworkAndDeps.json --input memberships.json --output frameworkWithoutMemberships.json
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  $GRAPHMAN_HOME/graphman.sh diff --input frameworkAndDeps.json --input memberships.json --output frameworkWithoutMemberships.json
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\graphman.bat diff --input frameworkAndDeps.json --input memberships.json --output frameworkWithoutMemberships.json
+  ```
+</details>
+<br/>
 
 Sometimes, you want to combine configuration from different sources into a single bundle. To do that, you can use the
 combine command:
 
-```
-$GRAPHMAN_HOME/graphman.sh combine --input frameworkWithoutMemberships.json --input memberships.json --output frameworkWithMembershipsAgain.json
-```
+<details>
+  <summary>Linux/MacOS</summary>
+
+  ```
+  $GRAPHMAN_HOME/graphman.sh combine --input frameworkWithoutMemberships.json --input memberships.json --output frameworkWithMembershipsAgain.json
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\graphman.bat combine --input frameworkWithoutMemberships.json --input memberships.json --output frameworkWithMembershipsAgain.json
+  ```
+</details>
+<br/>
 
 ## Apply configuration
 
-When sharing this workshop environment with multiple users, anybody can change the configuration of the production 
+> **_NOTE:_**  When sharing this workshop environment with multiple users, anybody can change the configuration of the production 
 gateway, note that somebody might apply changes to production ahead of time and affect your ability to detect an
 expected change between dev and prod.
 
-There are many ways to leverage the configuration you captured in these exercises.
-For example, to bootstrap it on a gateway, just mount the json bundle in this folder:
+There are many ways to leverage the configuration you captured in these exercises. For example, to bootstrap it on a gateway, just mount the json bundle in this folder:
+
 ```
 /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
 ```
@@ -204,11 +320,23 @@ Although this would be an anti-pattern when working with ephemeral gateways, you
 gateway directly using the graphman import command. When using the import command, graphman will send the bundle to
 the gateway set as the target in graphman.configuration. We already did this at the beginning so we are good to go:
 
-```
-$GRAPHMAN_HOME/graphman.sh import --input frameworkWithoutMemberships.json
-```
+<details>
+  <summary>Linux/MacOS</summary>
 
-### Appreciate the result
+  ```
+  $GRAPHMAN_HOME/graphman.sh import --input frameworkWithoutMemberships.json
+  ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+  ```
+  %GRAPHMAN_HOME%\graphman.bat import --input frameworkWithoutMemberships.json
+  ```
+</details>
+<br/>
+
+### View the result
 
 To validate that you sucesfully applied configuration change from dev to prod, you can call the APIs in each of those
 respective environments again and they should no longer produce divergent outputs.
@@ -239,15 +367,37 @@ Using your own git account, create a repo to hold the framework config.
 
 Now, you can add your configuration to the git repo. See below the steps:
 
+<details>
+  <summary>Linux/MacOS</summary>
+
 ```
-graphman.sh explode --input justMyFramework.json --output myTestAltSot
-graphman.sh export --using summary --output myTestAltSot/sourceSummary.json
-cd myTestAltSot
+$GRAPHMAN_HOME/graphman.sh explode --input justMyFramework.json --output myTestAltSot
+$GRAPHMAN_HOME/graphman.sh export --using summary --output myTestAltSot/sourceSummary.json
+cd $GRAPHMAN_HOME/myTestAltSot
 git init
 git add .
 git commit -m "first commit"
 git branch -M main
-git remote add origin git@github.com:flascelles/myTestAltSot.git
+git remote add origin git@github.com:<Owner>/<Repository>.git
 git push -u origin main
 ```
+</details>
+<details>
+  <summary>Windows</summary>
+
+```
+%GRAPHMAN_HOME%\graphman.bat explode --input justMyFramework.json --output myTestAltSot
+%GRAPHMAN_HOME%\graphman.bat export --using summary --output myTestAltSot\sourceSummary.json
+cd %GRAPHMAN_HOME%\myTestAltSot
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:<Owner>/<Repository>.git
+git push -u origin main
+```
+</details>
+<br/>
+
+
 
