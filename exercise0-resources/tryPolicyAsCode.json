@@ -1,0 +1,172 @@
+{
+	"info": {
+		"_postman_id": "5ee54fd7-e633-482a-b632-05375b0576f7",
+		"name": "Try PAC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18144580"
+	},
+	"item": [
+		{
+			"name": "Get Service /api2",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "7layer",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query webApiServiceByResolutionPath ($resolutionPath: String!) {\n    webApiServiceByResolutionPath (resolutionPath: $resolutionPath) {\n        name\n        resolutionPath\n        folderPath\n        policy {\n            #xml\n            #yaml\n            code\n            #json\n        }\n    }\n}",
+						"variables": "{\n    \"resolutionPath\" : \"/api2\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://mydevgw.brcmlabs.com/graphman",
+					"protocol": "https",
+					"host": [
+						"mydevgw",
+						"brcmlabs",
+						"com"
+					],
+					"path": [
+						"graphman"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Set New Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var fourDigits = pm.collectionVariables.get(\"rando\");",
+							"if (fourDigits == null || fourDigits.length < 4) {",
+							"    fourDigits = Math.floor(1000 + Math.random() * 9000);",
+							"    pm.collectionVariables.set(\"rando\", \"\" + fourDigits);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "7layer",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation setWebApiServices ($input: [WebApiServiceInput!]!) {\n    setWebApiServices (input: $input) {\n        status\n        webApiServices {\n            name\n            resolutionPath\n        }\n    }\n}",
+						"variables": "{\n  \"input\": [{\n    \"name\" : \"New Service {{rando}}\",\n    \"folderPath\": \"/myApis\",\n    \"resolutionPath\": \"/new{{rando}}\",\n    \"methodsAllowed\": [\n        \"GET\"\n    ],\n    \"policy\": {\n        \"code\": {\n                    \"All\": [\n                        {\n                            \"SetVariable\": {\n                                \"expression\": \"Look, ma! No XML!\",\n                                \"variable\": \"service_specific_var\"\n                            }\n                        },\n                        {\n                            \"Include\": {\n                                \"policyGuid\": \"a9f7163b-d17a-42e8-9b75-855ca6f67c08\",\n                                \"policyName\": \"Generic API Template\"\n                            }\n                        }\n                    ]\n                }\n    }\n  }]\n}"
+					}
+				},
+				"url": {
+					"raw": "https://mydevgw.brcmlabs.com/graphman",
+					"protocol": "https",
+					"host": [
+						"mydevgw",
+						"brcmlabs",
+						"com"
+					],
+					"path": [
+						"graphman"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var fourDigits = pm.collectionVariables.get(\"rando\");",
+							"if (fourDigits == null || fourDigits.length < 4) {",
+							"    fourDigits = Math.floor(1000 + Math.random() * 9000);",
+							"    pm.collectionVariables.set(\"rando\", \"\" + fourDigits);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "7layer",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation deleteWebApiServices($webApiServices: [String!]!) {\n    deleteWebApiServices(resolutionPaths: $webApiServices) {\n        detailedStatus {status description}\n        webApiServices {\n            goid\n            name\n            resolutionPath\n        }\n    }\n}",
+						"variables": "{\n    \"webApiServices\": [\n        \"/new{{rando}}\"\n    ]\n}"
+					}
+				},
+				"url": {
+					"raw": "https://mydevgw.brcmlabs.com/graphman",
+					"protocol": "https",
+					"host": [
+						"mydevgw",
+						"brcmlabs",
+						"com"
+					],
+					"path": [
+						"graphman"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "rando",
+			"value": ""
+		}
+	]
+}

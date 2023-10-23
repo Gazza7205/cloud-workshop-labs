@@ -21,6 +21,11 @@ Call API in production
 curl https://myprodgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 ```
 
+> **_NOTE:_**  When sharing this workshop environment with multiple users, or reusing
+an environment that has been used in a prior workshop, the difference between dev and prod
+may not exist as it may have been reconciled ahead of time. The instructor can reset the
+state of dev and prod by deleting the respective gw pods.
+
 You should see different responses between dev and prod which is a reflection that the respective Layer7 gateway
 configuration is divergent.
 
@@ -184,6 +189,10 @@ $GRAPHMAN_HOME/graphman.sh combine --input frameworkWithoutMemberships.json --in
 ```
 
 ## Apply configuration
+
+When sharing this workshop environment with multiple users, anybody can change the configuration of the production 
+gateway, note that somebody might apply changes to production ahead of time and affect your ability to detect an
+expected change between dev and prod.
 
 There are many ways to leverage the configuration you captured in these exercises.
 For example, to bootstrap it on a gateway, just mount the json bundle in this folder:
