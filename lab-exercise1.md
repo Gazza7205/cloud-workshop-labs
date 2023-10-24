@@ -20,7 +20,7 @@ cd cloud-workshop-labs
 
 3. Deploy the Layer7 Operator
 <details>
-  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
+  <summary><b>Linux/MacOS</b></summary>
 
   ```
   kubectl apply -f ./layer7-operator/rbac.yaml
@@ -30,7 +30,7 @@ cd cloud-workshop-labs
   ```
 </details>
 <details>
-  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
+  <summary><b>Windows</b></summary>
 
   ```
   kubectl apply -f layer7-operator\rbac.yaml
@@ -41,7 +41,7 @@ cd cloud-workshop-labs
 </details>
 <br/>
 
-3. Open up a new terminal to tail the Operator logs (you may have to set your KUBECONFIG environment variable in the new terminalkube)
+3. Open up a new terminal to tail the Operator logs (you may have to set your KUBECONFIG environment variable in the new terminal)
 ```
 kubectl logs -f -l control-plane=controller-manager -c manager
 ```
@@ -49,14 +49,14 @@ kubectl logs -f -l control-plane=controller-manager -c manager
 
 - Create a secret with your Gateway v11.x license
 <details>
-  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
+  <summary><b>Linux/MacOS</b></summary>
 
   ```
   kubectl create secret generic gateway-license --from-file=./exercise1-resources/license.xml
   ```
 </details>
 <details>
-  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
+  <summary><b>Windows</b></summary>
 
   ```
   kubectl create secret generic gateway-license --from-file=exercise1-resources\license.xml
@@ -66,14 +66,14 @@ kubectl logs -f -l control-plane=controller-manager -c manager
 
 - Create a Gateway CR
 <details>
-  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
+  <summary><b>Linux/MacOS</b></summary>
 
   ```
   kubectl apply -f ./exercise1-resources/gateway.yaml
   ```
 </details>
 <details>
-  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
+  <summary><b>Windows</b></summary>
 
   ```
   kubectl apply -f exercise1-resources\gateway.yaml

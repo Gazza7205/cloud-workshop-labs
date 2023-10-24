@@ -20,14 +20,27 @@ All 3 repositories are publicly available and will expanded upon in the next ses
 - Subscriptions Repository
 - APIs Repository
 
-1. Open a new terminal and inspect the Layer7 Operator log
+1. Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
 ```
-kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+kubectl logs -f -l control-plane=controller-manager -c manager
 ```
 2. Create Repositories
-```
-kubectl apply -k ./exercise4-resources/repositories/
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -k ./exercise4-resources/repositories/
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -k exercise4-resources/repositories
+  ```
+</details>
+<br/>
+
 3. View the created repositories
 ```
 kubectl get repositories
@@ -81,9 +94,21 @@ Let's take a closer look at some of the fields
 Certain entities (like stored passwords) can be encrypted for secure storage. The encryption configuration here allows us to provide a decryption key for the Graphman service. We will create the [graphman-encryption-secret](./exercise4-resources/graphman-encryption-secret.env) shortly.
 
 - Create the [graphman-encryption-secret](./exercise4-resources/graphman-encryption-secret.env)
-```
-kubectl create secret generic graphman-encryption-secret --from-env-file=./exercise4-resources/graphman-encryption-secret.env
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic graphman-encryption-secret --from-env-file=./exercise4-resources/graphman-encryption-secret.env
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic graphman-encryption-secret --from-env-file=exercise4-resources\graphman-encryption-secret.env
+  ```
+</details>
+<br/>
 
 ### Singleton Configs
 You will see a config option called singletonExtraction on line 36 in [gateway.yaml](./exercise4-resources/gateway.yaml). Singletons in this context are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. It's easy to track this when there's an external MySQL database. In ephemeral mode, gateways have no awareness of additional cluster nodes or deployments.
@@ -93,14 +118,27 @@ Singleton Extraction aims to mitigate this by designating one gateway pods as a 
 ### Update the Gateway
 Using our newly configured [gateway.yaml](./exercise4-resources/gateway.yaml) we will now update our gateway.
 
-- Make sure that you still have a separate terminal with the Layer7 Operator logs
+- Make sure that you still have a separate terminal with the Layer7 Operator logs (you may have to set your KUBECONFIG environment variable in the new terminal)
 ```
-kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+kubectl logs -f -l control-plane=controller-manager -c manager
 ```
 - Update the Gateway
-```
-kubectl apply -f ./exercise4-resources/gateway.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise4-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise4-resources\gateway.yaml
+  ```
+</details>
+<br/>
+
 This will trigger an update to your Gateway deployment with the addition of the static repository.
 
 ### Inspect the Gateway
@@ -202,7 +240,7 @@ ssg-74bc56d55c-cgctb                                  1/1     Running   0       
 ```
 - Get ssg pod
 ```
-kubectl get pod ssg-74bc56d55c-cgctb -oyaml
+kubectl get pod <pod-name> -oyaml
 ```
 output (annotations)
 ```
@@ -225,7 +263,7 @@ metadata:
 
 - Trigger an update
 ```
-kubectl edit pod ssg-74bc56d55c-cgctb
+kubectl edit pod <pod-name>
 ```
 Update one of the checksums
 

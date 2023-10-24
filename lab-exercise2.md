@@ -24,42 +24,69 @@ kubectl create secret generic gateway-secret --from-literal SSG_ADMIN_USERNAME=a
 kubectl get secret gateway-secret -oyaml
 ```
 3. Using jsonpath to inspect values
-```
-kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_USERNAME}" | base64 -d
-kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" | base64 -d
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_USERNAME}" | base64 -d
+  ```
+  ```
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" | base64 -d
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_USERNAME}" > output.txt  && certutil -decode output.txt decoded.txt > nul  && type decoded.txt && del decoded.txt output.txt
+  ```
+  ```  
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" > output.txt  && certutil -decode output.txt decoded.txt > nul  && type decoded.txt && del decoded.txt output.txt
+  ```
+</details>
+<br/>
+
 4. Base64 encoding strings for Kubernetes secrets
 
-The base64 encoded value in gateway-secret for SSG_ADMIN_PASSWORD is N2xheWVy (7layer). You might want to edit a Secret in place, new lines should be omitted (and this is not the default).
+The base64 encoded value in gateway-secret for SSG_ADMIN_PASSWORD is N2xheWVy (7layer). You might want to edit a Secret in place. Newlines should be omitted.
+<details>
+  <summary><b>Linux/MacOS</b></summary>
 
-- Using echo and base64
-```
-echo 7layer | base64
-```
-output - note we get some extra characters because echo outputs the trailing newline by default.
-```
-N2xheWVyCg==
-```
-- Omitting the new line with echo (man echo ==> -n do not output the trailing newline)
-```
-echo -n 7layer | base64
-```
-or
-```
-printf 7layer | base64
-```
-output - correct format
-```
-N2xheWVy
-```
+  ```
+  echo -n 7layer | base64
+  ```
+  Output (correct format without a newline):
+  ```
+  N2xheWVy
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  It's easiest to use an [online tool](https://www.base64encode.org/) for base64 encoding (and decoding) strings, or a text editor that supports the same.
+</details>
+<br/>
 
 ### Graphman Bundle
 There is a basic graphman bundle that contains a single cluster-wide property [here](./exercise2-resources/cluster-property.json). Following the same process as before we can create a secret with it
 
 1. Create the secret
-```
-kubectl create secret generic graphman-cluster-property-bundle --from-file=./exercise2-resources/cluster-property.json
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=./exercise2-resources/cluster-property.json
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=exercise2-resources\cluster-property.json
+  ```
+</details>
+<br/>
+
 2. Inspect the secret
 Note here that the key is cluster-property.json
 ```
@@ -82,17 +109,42 @@ type: Opaque
 When creating secrets from file you can specify the key, this works for kustomize too which we will be using shortly.
 
 This command will fail because the secret already exists.
-```
-kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=./exercise2-resources/cluster-property.json
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=./exercise2-resources/cluster-property.json
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=exercise2-resources\cluster-property.json
+  ```
+</details>
+<br/>
 
 ### Restman Bundle
 There is a basic Restman bundle that contains a single cluster-wide property [here](./exercise2-resources/cluster-property.bundle). Following the same process as before we can create a secret with it
 
 1. Create the secret
-```
-kubectl create secret generic restman-cluster-property-bundle --from-file=./exercise2-resources/cluster-property.bundle
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic restman-cluster-property-bundle --from-file=./exercise2-resources/cluster-property.bundle
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic restman-cluster-property-bundle --from-file=exercise2-resources\cluster-property.bundle
+  ```
+</details>
+<br/>
+
 2. Inspect the secret
 ```
 kubectl get secret restman-cluster-property-bundle -oyaml
@@ -113,9 +165,9 @@ type: Opaque
 ```
 
 ### Using Kustomize
-[Kustomize](https://kustomize.io/) introduces a template-free way to customize application configuration that simplifies the use of off-the-shelf applications. Now, built into kubectl as apply -k.
+[Kustomize](https://kustomize.io/) introduces a template-free way to customize application configuration that simplifies the use of off-the-shelf applications. It is now built into kubectl as `apply -k`.
 
-Creating secrets or configmaps by hand can be useful for once off commands, Kustomize is significantly more powerful (we're scratching the surface) and useful for idempotence. In this step we will go through how to create the same secrets with Kustomize.
+Creating secrets or configmaps by hand can be useful for once off commands, but Kustomize is significantly more powerful (we're scratching the surface) and useful for idempotence. In this step we will go through how to create the same secrets with Kustomize.
 
 [kustomization.yaml](./exercise2-resources/kustomization.yaml) is preconfigured to create 3 secrets using the built-in secret generator. 
 ```
@@ -137,9 +189,9 @@ secretGenerator:
 1. Create the Secrets using Kustomize
 Kustomize expects a folder with a file called kustomization.yaml
 ```
-kubectl apply -k ./exercise2-resources/
+kubectl apply -k exercise2-resources
 ```
-ouput
+Ouput:
 ```
 secret/gateway-secret configured
 secret/graphman-cluster-property-bundle configured
@@ -319,15 +371,27 @@ initContainers:
 ### Update the Gateway
 Now that we've configured our Gateway Custom Resource to use secrets for Gateway management, bundles, initContainers and the bootstrap script we can now send the updated manifest into Kubernetes. The Layer7 Operator will then reconcile our new desired state with reality.
 
-1. Tail the Layer7 Operator logs in a separate terminal
+1. Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
 ```
-kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+kubectl logs -f -l control-plane=controller-manager -c manager
 ```
 
 2. Update the Gateway CR
-```
-kubectl apply -f ./exercise2-resources/gateway.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise2-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise2-resources\gateway.yaml
+  ```
+</details>
+<br/>
 
 3. Get the Gateway Loadbalancer address
 ```

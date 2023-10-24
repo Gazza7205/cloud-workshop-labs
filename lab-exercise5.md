@@ -14,91 +14,47 @@ Please perform the steps [here](./readme.md#before-you-start) to configure your 
 - [Monitor Gateway](#monitor-gateway)
 
 ### Open Telemetry Collector
-1. Create OTel collector custom resource as below using kubectl. This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod. Make sure you update the yaml as below
-    1. Name (_***metadata.name***_) - 'workshopuser(n)-eck'
-    2. Resource name - To uniquely identify the gateway installation (_***spec.config | processors.batch.resource.attributes[layer7gw.name].value***_)- 'workshopuser(n)-ssg'
-```yaml
-kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
-kind: OpenTelemetryCollector
-metadata:
-  name: workshopuser(n)-eck
-spec:
-  image: otel/opentelemetry-collector-contrib:0.77.0
-  mode: sidecar
-  config: |
-    receivers:
-      otlp:
-        protocols:
-          grpc:
-          http:
-    processors:
-      batch:
-      resource:
-        attributes:
-        - key: layer7gw.name
-          value: "workshopuser(n)-ssg"
-          action: upsert
-    exporters:
-      logging:
-        loglevel: warn 
-      otlp/elastic:
-        endpoint: apm-server-apm-http.elastic.svc.cluster.local:8200
-        tls:
-          insecure_skip_verify: true
-        headers:
-          Authorization: "Bearer 4c3K0d9UP05C6nicW5Wl8rC7"
-      jaeger:
-        endpoint: jaeger-cloud-workshop-collector-headless.observability.svc.cluster.local:14250
-        tls:
-          insecure: true
-    service:
-      telemetry:
-        logs:
-          level: "debug"
-        metrics:
-          address: "0.0.0.0:8888"
-      pipelines:
-        traces:
-          receivers: [otlp]
-          processors: [resource,batch]
-          exporters: [jaeger,otlp/elastic]
-        metrics:
-          receivers: [otlp]
-          processors: [resource,batch]
-          exporters: [otlp/elastic]
-        logs: 
-          receivers: [otlp]
-          exporters: [otlp/elastic]
-EOF
-```
+1. Update and apply the OTel collector custom resource here, [exercise5-resources/collector.yaml](./exercise5-resources/collector.yaml). This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod. Make sure you update the yaml as below
+    1. On line 4, replace '(n)' with your workshop namespace number (e.g. workshopuser99-eck)
+    2. On line 19, replace '(n)' with your workshop namespace number (e.g. workshopuser99-ssg)
+    3. Apply the resource:
 
-2. Create OTel instrumentation CRD given below using kubectl. This will inject OTel agent into the Gateway deployment. Also, allows us to set agent configuration. Update the ***workshopuser(n)-ssg** below accordingly.
+<details>
+  <summary><b>Linux/MacOS</b></summary>
 
-```yaml
-kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
-kind: Instrumentation
-metadata:
-  name: otel-instrumentation
-spec:
-  env:
-    - name: OTEL_SERVICE_NAME
-      value: workshopuser(n)-ssg
-    - name: OTEL_METRICS_EXPORTER
-      value: otlp
-    - name: OTEL_TRACES_EXPORTER
-      value: otlp
-    - name: OTEL_RESOURCE_ATTRIBUTES
-      value: service.version=11.1.00,deployment.environment=cloud-workshop
-  exporter:
-    endpoint: http://localhost:4317
-  propagators:
-    - tracecontext
-    - baggage
-    - b3
-EOF
-```
+  ```
+  kubectl apply -f ./exercise5-resources/collector.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\collector.yaml
+  ```
+</details>
+<br/>
+
+2. Update and apply the OTel instrumentation custom resource here, [exercise5-resources/instrumentation.yaml](./exercise5-resources/instrumentation.yaml). This will inject an OTel agent into the Gateway deployment. It also allows us to set agent configuration. Update the ***workshopuser(n)-ssg** below accordingly.
+    1. On line 8, replace '(n)' with your workshop namespace number (e.g. workshopuser99-ssg)
+    2. Apply the resource:
+
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/instrumentation.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\instrumentation.yaml
+  ```
+</details>
+<br/>
+
 ### Create test services
 To create some test services, we are going to bootstrap the gateway with a bundle.
 1. OTel test services.
@@ -112,22 +68,31 @@ To create some test services, we are going to bootstrap the gateway with a bundl
     6. /echotest - Returns system date and time.
 
 Create bundle as secret.
-```
-kubectl create secret generic graphman-otel-test-services  --from-file=./exercise5-resources/otel_test_services.json 
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic graphman-otel-test-services  --from-file=./exercise5-resources/otel_test_services.json
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic graphman-otel-test-services  --from-file=exercise5-resources\otel_test_services.json
+  ```
+</details>
+<br/>
 
 ### Configuring the Gateway
 We can now create/update our Gateway Custom Resource with the bundle and OTel related configuration.
-The base CRD can be found [here](/exercise5-resources/gateway.yaml).
+The base CRD can be found [exercise5-resources/gateway.yaml](/exercise5-resources/gateway.yaml).
 
 1. Add OTel annotation to the gateway container under _***spec.app***_. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. </br> __*Uncomment lines 11 to 14 and update the value of sidecar.opentelemetry.io/inject with workshop user number.*__
 ```yaml
 annotations:
-    # Collector configuration CRD name.
     sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
-    # Container language type to inject appropriate agent.
     instrumentation.opentelemetry.io/inject-java: "true"
-    # Container name to instrument
     instrumentation.opentelemetry.io/container-names: "gateway"
 ```
 2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Comment out line 30 and Uncomment lines 31-34*__
@@ -165,19 +130,56 @@ Add below cwp's at _***spec.app.cwp.properties***_
 Now that we've configured our Gateway Custom Resource to make Gateway Observable we can now send the updated manifest into Kubernetes. The Layer7 Operator will then reconcile our new desired state with reality.
 
 1. Update the Gateway CR
-```
-kubectl apply -f ./exercise5-resources/gateway.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\gateway.yaml
+  ```
+</details>
+<br/>
+
 ### Call Test services.
 1. Create configmap with script to call the test services
-```
-kubectl apply -f ./exercise5-resources/api-request-configmap.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/api-request-configmap.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\api-request-configmap.yaml
+  ```
+</details>
+<br/>
 
 2. Create a job to execute the script.
-```
-kubectl apply -f ./exercise5-resources/test-services.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/test-services.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\test-services.yaml
+  ```
+</details>
+<br/>
 
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'

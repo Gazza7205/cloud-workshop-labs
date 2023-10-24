@@ -11,17 +11,17 @@ Please perform the steps [here](./readme.md#before-you-start) to configure your 
 - [Trace service on Jaeger](#trace-service-on-jaeger)
 
 ### Enable Tracing on Gateway
-We would like to control the amount of tracing so that it does not affect the Gateway performance and backend(Jaeger/Elastic search etc) disk space.
-In gateway we can enable and disable the trace using cwp `otel.traceEnabled`. Also, we need to configure which service to trace. This can be configured using `otel.traceConfig` cwp. This should in a json format. 
-1. Service(s) to trace can be specified by the url (regx) or service uid.
-2. Each assertion executed under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be included.
-3. Each span/assertion optionally have array of events/logs. They represent the context variables with values at the end of assertion execution. The assertion which need to trace the context variables need to be specified. By default none of the spans will have events with context variable values.
+We would like to control the amount of tracing so that it does not affect the Gateway performance and backend (e.g. Jaeger, elasticsearch, etc) disk space.
+In gateway we can enable and disable the trace using the cluster-wide property, `otel.traceEnabled`. Also, we need to configure which service to trace. This can be configured using the `otel.traceConfig` cluster-wide property. This should in a json format. 
+1. Service(s) to trace can be specified by the resolution URL (regular expression) or service UID.
+2. Each assertion executed under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be excluded.
+3. Each span/assertion may optionally have an array of events/logs. They represent the context variables with values at the end of assertion execution.   Assertions which need to trace context variables need to be specified. By default none of the spans will have events with context variable values.
 
-Lets enable the trace for our service using url regx and also trace all context variables. 
-Add below cpws to Gateway custom resource at  _***spec.app.cwp.properties***_. 
+Lets enable the trace for our service using the URL regular expression and also trace all context variables. 
+Add below cluster-wide properties to Gateway custom resource at  _***spec.app.cwp.properties***_. 
 
-Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/gateway.yaml).
-</br> __**Uncomment lines from 104 to 115**__
+Continue using the Gateway CRD file from exercise5 [exercise5-resources/gateway.yaml](/exercise5-resources/gateway.yaml).
+</br> __**Uncomment lines from 111 to 122**__
 
 ```yaml
 - name: otel.traceEnabled
@@ -42,9 +42,22 @@ Continue using the Gateway CRD file from exercise5 [here](/exercise5-resources/g
 Apply the changes made to Gateway custom resource. 
 
 1. Update the Gateway CR
-```
-kubectl apply -f ./exercise5-resources/gateway.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\gateway.yaml
+  ```
+</details>
+<br/>
+
 2. As there is only an cwp changes. The gateway pod will not restart and hence pod need to deleted manually. In production, cwp change can be applied using a repository/graphman or restman
 Get pod name
 ```

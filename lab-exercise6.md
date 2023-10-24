@@ -1,6 +1,6 @@
 
 # Lab exercise 6
-In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 5, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of apis by organization. [See other exercises](./readme.md#lab-exercises).
+In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 5, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of APIs by organization. [See other exercises](./readme.md#lab-exercises).
 
 ### This exercise requires pre-requisites
 Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 5](./lab-exercise5.md), and is a pre-requisite.
@@ -17,14 +17,26 @@ Create a message-completed policy with Telemetry Metric assertion. Select the ty
 Get organization id from request parameter, if not present set it to 'NONE'
 
 Create a configmap containing the policy.
-```
-kubectl create secret generic graphman-otel-message-complete --from-file=./exercise6-resources/otel_message_complete.json
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic graphman-otel-message-complete --from-file=./exercise6-resources/otel_message_complete.json
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic graphman-otel-message-complete --from-file=exercise6-resources\otel_message_complete.json
+  ```
+</details>
+<br/>
 
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
 ### Configuring the Gateway
-Continue using the Gateway CRD file from exercise 5 [here](./exercise5-resources/gateway.yaml)
+Continue using the Gateway CRD file from exercise 5 [exercise5-resources/gateway.yaml](./exercise5-resources/gateway.yaml)
 
 1. Add message complete secret bundle to _***spec.app.bundle***_
 </br> __* Uncomment lines 35 to 37 *__
@@ -42,9 +54,22 @@ bundle:
 Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile our new desired state with reality.
 
 1. Update the Gateway CR and verify that the gateway pod is restarted.
-```
-kubectl apply -f ./exercise5-resources/gateway.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\gateway.yaml
+  ```
+</details>
+<br/>
+
 ```
 kubectl get pods
 ```
@@ -63,9 +88,22 @@ To generate some load, we will reuse the job from exercise6.
 kubectl delete job api-requests
 ```
 2. Submit the job
-```
-kubectl apply -f ./exercise5-resources/test-services.yaml
-```
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise5-resources/test-services.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise5-resources\test-services.yaml
+  ```
+</details>
+<br/>
+
 ### Monitor Gateway
 1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
 2. Search for 'Usage By Org' and click on the link.
