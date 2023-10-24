@@ -81,14 +81,14 @@ git clone https://github.com/Layer7-Community/graphman-client.git
 Set the graphman home:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   export GRAPHMAN_HOME=~/your_graphman_path
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   set GRAPHMAN_HOME=%USERPROFILE%\your_graphman_path
@@ -126,14 +126,14 @@ Using the graphman client, you can pull configuration from the development envir
 Pulling the entire configuration from the gateway is all-encompassing and non discriminate. You will get more
 configuration than you are interested in, but it is still a common starting point.
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/graphman.sh export --using all --output totalDevEnv.json
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\graphman.bat export --using all --output totalDevEnv.json
@@ -149,7 +149,7 @@ In the following set of commands, we are taking the total configuration which we
 a folder named base in an exploded form. Then we remove from the configuration the entities which are meant to be local.
 And finally we re-implode the configuration into a new config bundle named trimmed.json.
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
 ```
 $GRAPHMAN_HOME/graphman.sh explode --input totalDevEnv.json --output base
@@ -163,7 +163,7 @@ $GRAPHMAN_HOME/graphman.sh implode --input base --output trimmed.json
 ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
 ```
 %GRAPHMAN_HOME%\graphman.bat explode --input totalDevEnv.json --output base
@@ -190,14 +190,14 @@ dependencies for example, an object that does not show up in the folder structur
 a jdbc connection.
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/graphman.sh export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\graphman.bat export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
@@ -210,14 +210,14 @@ a jdbc connection.
 Graphman is a graphQL API and its client is packaged with preset queries. A power user can, however, craft their own
 queries to tailor their specific re-usable need. To augment graphman with your own query, take a look at the folder
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/queries
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\queries
@@ -229,14 +229,14 @@ An example custom query that you can use in this example is located under config
 toolbox by copying it in the right folder:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   cp $GRAPHMAN_HOME/configAsCode/plansCWPs.* $GRAPHMAN_HOME/queries
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   copy %GRAPHMAN_HOME%\configAsCode\plansCWPs.* %GRAPHMAN_HOME%\queries
@@ -247,14 +247,14 @@ toolbox by copying it in the right folder:
 You can now use this query which lets you extract the CWPs that control the SLA memberships:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/graphman.sh export --using plansCWPs --output memberships.json
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\graphman.bat export --using plansCWPs --output memberships.json
@@ -270,14 +270,14 @@ and that the CWPs that control the memberships are dependencies, they are automa
 command, you can eliminate this overlap between the two bundles:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/graphman.sh diff --input frameworkAndDeps.json --input memberships.json --output frameworkWithoutMemberships.json
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\graphman.bat diff --input frameworkAndDeps.json --input memberships.json --output frameworkWithoutMemberships.json
@@ -289,14 +289,14 @@ Sometimes, you want to combine configuration from different sources into a singl
 combine command:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/graphman.sh combine --input frameworkWithoutMemberships.json --input memberships.json --output frameworkWithMembershipsAgain.json
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\graphman.bat combine --input frameworkWithoutMemberships.json --input memberships.json --output frameworkWithMembershipsAgain.json
@@ -321,14 +321,14 @@ gateway directly using the graphman import command. When using the import comman
 the gateway set as the target in graphman.configuration. We already did this at the beginning so we are good to go:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
   ```
   $GRAPHMAN_HOME/graphman.sh import --input frameworkWithoutMemberships.json
   ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
   ```
   %GRAPHMAN_HOME%\graphman.bat import --input frameworkWithoutMemberships.json
@@ -368,7 +368,7 @@ Using your own git account, create a repo to hold the framework config.
 Now, you can add your configuration to the git repo. See below the steps:
 
 <details>
-  <summary>Linux/MacOS</summary>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
 
 ```
 $GRAPHMAN_HOME/graphman.sh explode --input justMyFramework.json --output myTestAltSot
@@ -383,7 +383,7 @@ git push -u origin main
 ```
 </details>
 <details>
-  <summary>Windows</summary>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
 
 ```
 %GRAPHMAN_HOME%\graphman.bat explode --input justMyFramework.json --output myTestAltSot

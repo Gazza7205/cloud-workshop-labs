@@ -19,64 +19,67 @@ cd cloud-workshop-labs
 2. Place a Gateway v11.x license file (license.xml) in [./exercise1-resources/](./exercise1-resources/)
 
 3. Deploy the Layer7 Operator
+<details>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
+
+  ```
+  kubectl apply -f ./layer7-operator/rbac.yaml
+  ```
+  ```
+  kubectl apply -f ./layer7-operator/operator.yaml
+  ```
+</details>
+<details>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
+
+  ```
+  kubectl apply -f layer7-operator\rbac.yaml
+  ```
+  ```  
+  kubectl apply -f layer7-operator\operator.yaml
+  ```
+</details>
+<br/>
+
+3. Open up a new terminal to tail the Operator logs (you may have to set your KUBECONFIG environment variable in the new terminalkube)
 ```
-kubectl apply -f ./layer7-operator/rbac.yaml
-```
-```
-kubectl apply -f ./layer7-operator/operator.yaml
-```
-3. Open up a new terminal to tail the Operator logs
-```
-kubectl logs -f $(kubectl get pods -oname | grep layer7-operator-controller-manager) manager
+kubectl logs -f -l control-plane=controller-manager -c manager
 ```
 4. Deploy a Simple Gateway Custom Resource
 
 - Create a secret with your Gateway v11.x license
-```
-kubectl create secret generic gateway-license --from-file=./exercise1-resources/license.xml
-```
+<details>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
+
+  ```
+  kubectl create secret generic gateway-license --from-file=./exercise1-resources/license.xml
+  ```
+</details>
+<details>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
+
+  ```
+  kubectl create secret generic gateway-license --from-file=exercise1-resources\license.xml
+  ```
+</details>
+<br/>
+
 - Create a Gateway CR
-```
-kubectl apply -f - <<EOF
-apiVersion: security.brcmlabs.com/v1
-kind: Gateway
-metadata:
-  name: ssg
-spec:
-  version: "11.0.00_CR1"
-  license:
-    accept: true
-    secretName: gateway-license
-  app:
-    replicas: 1
-    image: docker.io/caapim/gateway:11.0.00_CR1
-    management:
-      username: admin
-      password: 7layer
-      cluster:
-        password: 7layer
-        hostname: gateway.brcmlabs.com
-    resources:
-      requests:
-        memory: 4Gi
-        cpu: 2
-      limits:
-        memory: 4Gi
-        cpu: 2
-    service:
-      # annotations:
-      type: LoadBalancer
-      ports:
-      - name: https
-        port: 8443
-        targetPort: 8443
-        protocol: TCP
-      - name: management
-        port: 9443
-        targetPort: 9443
-        protocol: TCP
-EOF
-```
+<details>
+  <summary style="color:darkgreen;font-weight:bold">Linux/MacOS</summary>
+
+  ```
+  kubectl apply -f ./exercise1-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary style="color:darkgreen;font-weight:bold">Windows</summary>
+
+  ```
+  kubectl apply -f exercise1-resources\gateway.yaml
+  ```
+</details>
+<br/>
 
 5. Inspect the Resources the Layer7 Operator created
 ```
