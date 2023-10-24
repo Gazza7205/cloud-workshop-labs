@@ -8,10 +8,10 @@ spec:
     accept: true
     secretName: gateway-license
   app:
-    # annotations:
-    #   sidecar.opentelemetry.io/inject: "workshopuser20-eck"
-    #   instrumentation.opentelemetry.io/inject-java: "true"
-    #   instrumentation.opentelemetry.io/container-names: "gateway"
+    annotations:
+      sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
+      instrumentation.opentelemetry.io/inject-java: "true"
+      instrumentation.opentelemetry.io/container-names: "gateway"
     replicas: 1
     image: docker.io/layer7api/gateway:11.0.00_COMBINED
     imagePullPolicy: IfNotPresent
