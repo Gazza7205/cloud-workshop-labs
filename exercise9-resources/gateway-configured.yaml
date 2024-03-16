@@ -23,6 +23,22 @@ spec:
       limits:
         memory: 4Gi
         cpu: 2
+    externalSecrets:
+      - name: database-credentials-gcp
+        enabled: true
+        description: GCP Database credentials
+        variableReferencable: true
+      - name: mysupersecrets
+        enabled: true
+        description: top secret
+        variableReferencable: true
+        encryption:
+          passphrase: 7layer
+          existingSecret: ""
+      - name: private-key-secret
+        enabled: true
+        description: a private key
+        variableReferencable: false
     bundle:
       - type: restman
         source: secret
@@ -30,11 +46,32 @@ spec:
       - type: graphman
         source: secret
         name: graphman-cluster-property-bundle
+      - type: graphman
+        source: secret
+        name: graphman-secret-reader-bundle
     bootstrap:
       script:
         enabled: true
     singletonExtraction: false
-    repositoryReferences: []
+    repositoryReferences:
+      - name: l7-gw-myframework
+        enabled: true
+        type: static
+        encryption:
+          existingSecret: graphman-encryption-secret
+          key: FRAMEWORK_ENCRYPTION_PASSPHRASE
+      - name: l7-gw-myapis
+        enabled: true
+        type: dynamic
+        encryption:
+          existingSecret: graphman-encryption-secret
+          key: APIS_ENCRYPTION_PASSPHRASE
+      - name: l7-gw-mysubscriptions
+        enabled: true
+        type: dynamic
+        encryption:
+          existingSecret: graphman-encryption-secret
+          key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
     initContainers:
     - name: workshop-init
       image: harbor.sutraone.com/mock/workshop-init:1.0.0
@@ -43,7 +80,9 @@ spec:
       - name: config-directory
         mountPath: /opt/docker/custom
     management:
-      secretName: gateway-secret
+      #secretName: gateway-secret
+      username: admin
+      password: 7layer
       service:
         enabled: false
         type: ClusterIP
@@ -58,6 +97,7 @@ spec:
         enabled: true
         initContainerImage: docker.io/layer7api/graphman-static-init:1.0.1
       cluster:
+        #password: 7layer
         hostname: gateway.brcmlabs.com
       database:
         enabled: false # this runs the gateway in dbbacked/ephemeral mode

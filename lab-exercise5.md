@@ -1,191 +1,330 @@
-
-# Lab exercise 5
-In this exercise you will Observe your Gateway using Open Telemetry Metrics, Traces and Logs. The lab environment has the Open Telemetry Operator, [Kibana](https://kibana.brcmlabs.com/) and [Jaeger](https://jaeger.brcmlabs.com/) services pre-installed to monitor the Gateway. [See other exercises](./readme.md#lab-exercises).
+# Lab Exercise 5
+This exercise combines all of the previous examples into a more advanced Gateway. [See other exercises](./readme.md#lab-exercises).
 
 ### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 4](./lab-exercise4.md) and is a pre-requisite for this.
+Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 3](./lab-exercise3.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
 
 ## Key concepts
-- [Open Telemetry Collector](#open-telemetry-collector)
-- [Create test services](#create-test-services)
-- [Configuring the Gateway](#configuring-the-gateway)
+- [Create Repositories](#create-repositories)
+- [Configure Repository References](#configure-repository-references)
+- [Singleton Configs](#singleton-configs)
 - [Update the Gateway](#update-the-gateway)
-- [Call Test services](#call-test-services)
-- [Monitor Gateway](#monitor-gateway)
+- [Inspect the Gateway](#inspect-the-gateway)
+- [Test your Gateway Deployment](#test-your-gateway-deployment)
 
-### Open Telemetry Collector
-1. Update and apply the OTel collector custom resource here, [exercise5-resources/collector.yaml](./exercise5-resources/collector.yaml). This OTel collector configuration is used to create a OTel Collector as a sidecar to gateway pod. Make sure you update the yaml as below
-    1. On line 4, replace '(n)' with your workshop namespace number (e.g. workshopuser99-eck)
-    2. On line 19, replace '(n)' with your workshop namespace number (e.g. workshopuser99-ssg)
-    3. Apply the resource:
+### Create Repositories
+There are 3 repository custom resources defined [here](./exercise4-resources/repositories/). These make up a recommended framework that aims to break up more complex environments into more manageable parts. In this example we will use a secret instead of including username and token directly in our repository resources. The secret will be created in step 2 using kustomize.
 
+All 3 repositories are publicly available and will expanded upon in the next session
+- Framework Repository
+- Subscriptions Repository
+- APIs Repository
+
+1. Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
+```
+kubectl logs -f -l control-plane=controller-manager -c manager
+```
+2. Create Repositories
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/collector.yaml
+  kubectl apply -k ./exercise4-resources/repositories/
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\collector.yaml
+  kubectl apply -k exercise4-resources/repositories
   ```
 </details>
 <br/>
 
-2. Update and apply the OTel instrumentation custom resource here, [exercise5-resources/instrumentation.yaml](./exercise5-resources/instrumentation.yaml). This will inject an OTel agent into the Gateway deployment. It also allows us to set agent configuration. Update the ***workshopuser(n)-ssg** below accordingly.
-    1. On line 8, replace '(n)' with your workshop namespace number (e.g. workshopuser99-ssg)
-    2. Apply the resource:
+3. View the created repositories
+```
+kubectl get repositories
+```
+output
+```
+NAME                    AGE
+l7-gw-myapis            67s
+l7-gw-myframework       67s
+l7-gw-mysubscriptions   67s
+```
 
+### Configure Repository References
+Here we will configure repository references for our Gateway custom resource. Repository references are used by the Gateway controller to reconcile the resulting graphman bundles from our repositories to Gateways. This is tracked using annotations that are applied to each gateway pod (in ephemeral mode) or deployment (when there is a MySQL database configured).
+
+- Open [gateway.yaml](./exercise4-resources/gateway.yaml) and configure repository references on line 37
+```
+repositoryReferences:
+  - name: l7-gw-myframework
+    enabled: true
+    type: static
+    encryption:
+      existingSecret: graphman-encryption-secret
+      key: FRAMEWORK_ENCRYPTION_PASSPHRASE
+  - name: l7-gw-myapis
+    enabled: true
+    type: dynamic
+    encryption:
+      existingSecret: graphman-encryption-secret
+      key: APIS_ENCRYPTION_PASSPHRASE
+  - name: l7-gw-mysubscriptions
+    enabled: true
+    type: dynamic
+    encryption:
+      existingSecret: graphman-encryption-secret
+      key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
+```
+Let's take a closer look at some of the fields
+#### type - static|dynamic
+- static
+    - requires a gateway restart
+    - applied via a dynamic initContainer
+    - useful for infrastructure that is less frequent to change
+    - using tags is recommended!!
+- dynamic
+    - applied automatically with no restarts required
+    - useful for frequent changes
+    - includes support for singleton configurations
+    - zero downtime
+#### encryption
+Certain entities (like stored passwords) can be encrypted for secure storage. The encryption configuration here allows us to provide a decryption key for the Graphman service. We will create the [graphman-encryption-secret](./exercise4-resources/graphman-encryption-secret.env) shortly.
+
+- Create the [graphman-encryption-secret](./exercise4-resources/graphman-encryption-secret.env)
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/instrumentation.yaml
+  kubectl create secret generic graphman-encryption-secret --from-env-file=./exercise4-resources/graphman-encryption-secret.env
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\instrumentation.yaml
+  kubectl create secret generic graphman-encryption-secret --from-env-file=exercise4-resources\graphman-encryption-secret.env
   ```
 </details>
 <br/>
 
-### Create test services
-To create some test services, we are going to bootstrap the gateway with a bundle.
-1. OTel test services.
-    1. /test1 - Always success. Calls another service /echotest and returns result from it.
-    2. /test2 - Always errors out with a policy error
-    3. /test3 - Always errors out with a routing error. Try’s to call an invalid backend service
-    4. /test4 - Always Success. No routing.    
-    5. /test5 - Takes two query parameters as input and calculate the age (years elapsed). It has some error and needs to be fixed.
-        i. dob - Date of birth - default format dd/MM/yyyy
-        ii. format (optional) - Specify the format of dob
-    6. /echotest - Returns system date and time.
+### Singleton Configs
+You will see a config option called singletonExtraction on line 36 in [gateway.yaml](./exercise4-resources/gateway.yaml). Singletons in this context are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. It's easy to track this when there's an external MySQL database. In ephemeral mode, gateways have no awareness of additional cluster nodes or deployments.
 
-Create bundle as secret.
-<details>
-  <summary><b>Linux/MacOS</b></summary>
-
-  ```
-  kubectl create secret generic graphman-otel-test-services  --from-file=./exercise5-resources/otel_test_services.json
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
-
-  ```
-  kubectl create secret generic graphman-otel-test-services  --from-file=exercise5-resources\otel_test_services.json
-  ```
-</details>
-<br/>
-
-### Configuring the Gateway
-We can now create/update our Gateway Custom Resource with the bundle and OTel related configuration.
-The base CRD can be found [exercise5-resources/gateway.yaml](/exercise5-resources/gateway.yaml).
-
-1. Add OTel annotation to the gateway container under _***spec.app***_. The OTel operator can observe the containers with these annotations (web-hooks) and inject the OTel agent and/or OTel collector. </br> __*Uncomment lines 11 to 14 and update the value of sidecar.opentelemetry.io/inject with workshop user number.*__
-```yaml
-annotations:
-    sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
-    instrumentation.opentelemetry.io/inject-java: "true"
-    instrumentation.opentelemetry.io/container-names: "gateway"
-```
-2. Update _***spec.app.bundle***_ to point to test service graphman bundles secrets. </br> __*Comment out line 30 and Uncomment lines 31-34*__
-```yaml
-bundle:
-  - type: graphman
-    source: secret
-    name: graphman-otel-test-services
-```
-3. Disable auto instrumentation of all libraries except jdbc and jvm runtime-metrics. Add below jvm params at _***spec.app.java.extraArgs***_.
-We can enable or disable each desired instrumentation individually using -Dotel.instrumentation.[name].enabled=true/false
-Complete list of supported auto instrumentation library/framework can be found [here](https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/#suppressing-specific-agent-instrumentation)
-</br> __*Uncomment lines 81 to 85*__
-```yaml
-- -Dotel.instrumentation.common.default-enabled=false
-- -Dotel.instrumentation.opentelemetry-api.enabled=true
-- -Dotel.instrumentation.runtime-metrics.enabled=true
-- -Dotel.instrumentation.jdbc.enabled=true
-- -Dotel.instrumentation.jdbc-datasource.enabled=true
-```
-4. Add Open Telemetry cluster wide properties
-Enable service metrics and set metric prefix. For the work shop, let the `otel.metricPrefix` be `l7_`. Also set resource attributes to capture.
-Add below cwp's at _***spec.app.cwp.properties***_
-</br> __*Uncomment lines 105 to 110*__
-```yaml
-- name: otel.serviceMetricEnabled
-    value: "true"
-- name: otel.metricPrefix
-    value: l7_
-- name: otel.resourceAttributes
-    value: k8s.container.name,k8s.pod.name
-```
+Singleton Extraction aims to mitigate this by designating one gateway pods as a leader and only applying scheduled tasks and jms listeners to that pod. This comes with a current limitation to dynamic repository references only. 
 
 ### Update the Gateway
-Now that we've configured our Gateway Custom Resource to make Gateway Observable we can now send the updated manifest into Kubernetes. The Layer7 Operator will then reconcile our new desired state with reality.
+Using our newly configured [gateway.yaml](./exercise4-resources/gateway.yaml) we will now update our gateway.
 
-1. Update the Gateway CR
+- Make sure that you still have a separate terminal with the Layer7 Operator logs (you may have to set your KUBECONFIG environment variable in the new terminal)
+```
+kubectl logs -f -l control-plane=controller-manager -c manager
+```
+- Update the Gateway
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/gateway.yaml
+  kubectl apply -f ./exercise4-resources/gateway.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\gateway.yaml
+  kubectl apply -f exercise4-resources\gateway.yaml
   ```
 </details>
 <br/>
 
-### Call Test services.
-1. Create configmap with script to call the test services
-<details>
-  <summary><b>Linux/MacOS</b></summary>
+This will trigger an update to your Gateway deployment with the addition of the static repository.
 
-  ```
-  kubectl apply -f ./exercise5-resources/api-request-configmap.yaml
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
+### Inspect the Gateway
+Let's take a look at the Gateway CR
+```
+kubectl get gateway ssg -oyaml
+```
+output (status)
+```
+status:
+  conditions:
+  - lastTransitionTime: "2023-09-18T19:13:44Z"
+    lastUpdateTime: "2023-09-18T19:13:44Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2023-09-13T12:52:00Z"
+    lastUpdateTime: "2023-09-23T13:21:43Z"
+    message: ReplicaSet "ssg-74bc56d55c" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  gateway:
+  - name: ssg-74bc56d55c-cgctb
+    phase: Running
+    ready: true
+    startTime: 2023-09-23 13:27:34 +0000 UTC
+  host: gateway.brcmlabs.com
+  image: docker.io/caapim/gateway:11.0.00_CR1
+  managementPod: ssg-74bc56d55c-cgctb
+  ready: 1
+  replicas: 1
+  repositoryStatus:
+  - branch: main
+    commit: cd1e9692d78b15c7012137f6b1607d2207709509
+    enabled: true
+    endpoint: https://github.com/Gazza7205/l7GWMyFramework
+    name: l7-gw-myframework
+    secretName: graphman-repository-secret
+    storageSecretName: l7-gw-myframework-repository-main
+    type: static
+  - branch: main
+    commit: 8fc74669689abe781645dac214ebf26eb7480c78
+    enabled: true
+    endpoint: https://github.com/Gazza7205/l7GWMyAPIs
+    name: l7-gw-myapis
+    secretName: graphman-repository-secret
+    storageSecretName: l7-gw-myapis-repository-main
+    type: dynamic
+  - branch: main
+    commit: 9daef7d1286dd13b609ada39ff1d6aa624ff64da
+    enabled: true
+    endpoint: https://github.com/Gazza7205/l7GWMySubscriptions
+    name: l7-gw-mysubscriptions
+    secretName: graphman-repository-secret
+    storageSecretName: l7-gw-mysubscriptions-repository-main
+    type: dynamic
+  state: Ready
+  version: 11.0.00_CR1
+```
 
-  ```
-  kubectl apply -f exercise5-resources\api-request-configmap.yaml
-  ```
-</details>
-<br/>
+### Inspect the Gateway Deployment
+```
+kubectl describe deployment ssg
+```
+output (initContainers)
+```
+Init Containers:
+  workshop-init:
+   Image:        harbor.sutraone.com/mock/workshop-init:1.0.0
+   Port:         <none>
+   Host Port:    <none>
+   Environment:  <none>
+   Mounts:
+     /opt/docker/custom from config-directory (rw)
+  graphman-static-init-8551b0f587:
+   Image:      docker.io/layer7api/graphman-static-init:1.0.1
+   Port:       <none>
+   Host Port:  <none>
+   Environment:
+     BOOTSTRAP_BASE:  /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/graphman/0
+   Mounts:
+     /graphman/config.json from ssg-repository-init-config (rw,path="config.json")
+     /graphman/localref/l7-gw-myframework-repository-main from l7-gw-myframework-repository-main (rw)
+     /graphman/secrets/l7-gw-myframework from graphman-repository-secret (rw)
+     /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/graphman/0 from ssg-repository-bundle-dest (rw)
+```
+#### Inspect the Gateway Pod
+- Get pods
+```
+kubectl get pods
+```
+output (wait for the ssg pod to hit READY 1/1 before proceeding to the next step)
+```
+NAME                                                  READY   STATUS    RESTARTS   AGE
+layer7-operator-controller-manager-77bb65f7fb-87gv4   2/2     Running   0          4d16h
+ssg-74bc56d55c-cgctb                                  1/1     Running   0          6m38s
+```
+- Get ssg pod
+```
+kubectl get pod <pod-name> -oyaml
+```
+output (annotations)
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    security.brcmlabs.com/l7-gw-myapis-dynamic: 8fc74669689abe781645dac214ebf26eb7480c78
+    security.brcmlabs.com/l7-gw-mysubscriptions-dynamic: 9daef7d1286dd13b609ada39ff1d6aa624ff64da
+  creationTimestamp: "2023-09-23T13:27:34Z"
+  generateName: ssg-74bc56d55c-
+  labels:
+    app.kubernetes.io/created-by: layer7-operator
+    app.kubernetes.io/managed-by: layer7-operator
+    app.kubernetes.io/name: ssg
+    app.kubernetes.io/part-of: ssg
+    management-access: leader
+    pod-template-hash: 74bc56d55c
+```
 
-2. Create a job to execute the script.
-<details>
-  <summary><b>Linux/MacOS</b></summary>
+- Trigger an update
+```
+kubectl edit pod <pod-name>
+```
+Update one of the checksums
 
-  ```
-  kubectl apply -f ./exercise5-resources/test-services.yaml
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
+### Test your Gateway Deployment
+```
+kubectl get svc
 
-  ```
-  kubectl apply -f exercise5-resources\test-services.yaml
-  ```
-</details>
-<br/>
+NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
+ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
 
-### Monitor Gateway
-1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
-2. Search for 'Layer7 Gateway Dashboard' and click on the link.
-3. Select your Gateway from the 'Gateway' dropdown (workshopuser(n)-ssg)
-4. You should be able to see the Gateway Service metrics along with jvm metrics on the dashboard.
+if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
+
+NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
+ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
+```
+
+If EXTERNAL-IP is stuck in \<PENDING> state
+```
+kubectl port-forward svc/ssg 9443:9443
+```
+
+```
+curl https://34.89.84.69:8443/api1 -H "client-id: D63FA04C8447" -k
+
+or if you used port-forward
+
+curl https://localhost:9443/api1 -H "client-id: D63FA04C8447" -k
+
+```
+Response
+```
+{
+  "client" : "D63FA04C8447",
+  "plan" : "plan_a",
+  "service" : "hello api 1",
+  "myDemoConfigVal" : "Deep Inside Config"
+}
+```
+
+##### Sign into Policy Manager
+Policy Manager access is less relevant in a deployment like this because we haven't specified an external MySQL database, any changes that we make will only apply to the Gateway that we're connected to and won't survive a restart. It is still useful to check what's been applied. In our configuration we could set the following which would override the default application port configuration.
+```
+...
+listenPorts:
+  harden: true
+...
+```
+This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection.
+
+```
+username: admin
+password: 7layer
+gateway: 35.189.116.20:9443
+```
+or if you used port-forward
+```
+username: admin
+password: 7layer
+gateway: localhost:9443
+```
+
+### Start [Exercise 5](./lab-exercise5.md)
 
 
-### Start [Exercise 6](./lab-exercise6.md)
