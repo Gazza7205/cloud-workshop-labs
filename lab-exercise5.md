@@ -1,51 +1,58 @@
 # Lab Exercise 5
-This exercise combines all of the previous examples into a more advanced Gateway. [See other exercises](./readme.md#lab-exercises).
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 3](./lab-exercise3.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Create Repository Custom Resources](#3-create-repository-custom-resources)
+1. [Configure Repository References](#4-configure-repository-references)
+1. [Singletons](#5-singletons)
+1. [Update the Gateway Custom Resource](#6-update-the-gateway-custom-resource)
+1. [Inspect the Gateway Custom Resource](#7-inspect-the-gateway-custom-resource)
+1. [Inspect the Gateway Deployment](#8-inspect-the-gateway-deployment)
+1. [Test the Gateway Deployment](#9-test-the-gateway-deployment)
 
-## Key concepts
-- [Create Repositories](#create-repositories)
-- [Configure Repository References](#configure-repository-references)
-- [Singleton Configs](#singleton-configs)
-- [Update the Gateway](#update-the-gateway)
-- [Inspect the Gateway](#inspect-the-gateway)
-- [Test your Gateway Deployment](#test-your-gateway-deployment)
+## 1. Prerequisites
 
-### Create Repositories
-There are 3 repository custom resources defined [here](./exercise4-resources/repositories/). These make up a recommended framework that aims to break up more complex environments into more manageable parts. In this example we will use a secret instead of including username and token directly in our repository resources. The secret will be created in step 2 using kustomize.
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 4](./lab-exercise4.md) before beginning this exercise.
 
-All 3 repositories are publicly available and will expanded upon in the next session
-- Framework Repository
-- Subscriptions Repository
-- APIs Repository
+## 2. Overview
 
-1. Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
+This exercise combines all of the previous exercises into a more advanced example.
+
+## 3. Create Repository Custom Resources
+There are three Repository custom resources defined here, [`./exercise5-resources/repositories/`](./exercise5-resources/repositories/). These make up an example framework that aims to break up more complex configuration into more manageable parts. Parts that can be managed separately by separate teams in separate repositories with different change life cycles. These are provided purely as an example, and to demonstrate related concepts during these lab exercises.
+
+The same folder includes a secret for repository credentials (instead of including the credentials in the Repository custom resource manifests themselves) that will be created together with the Repository custom resources using Kustomize in the steps below.
+
+First, if you're not still tailing the Layer7 Operator logs from the previous lab exercise, then start doing that now in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal):
 ```
 kubectl logs -f -l control-plane=controller-manager -c manager
 ```
-2. Create Repositories
+
+Next, create the Repositories and associated secret using Kustomize:
+
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -k ./exercise4-resources/repositories/
+  kubectl apply -k ./exercise5-resources/repositories/
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -k exercise4-resources/repositories
+  kubectl apply -k exercise5-resources/repositories
   ```
 </details>
 <br/>
 
-3. View the created repositories
+Finally, view the created Repositories:
+
 ```
 kubectl get repositories
 ```
-output
+
+Here is an example of the previous command's output:
 ```
 NAME                    AGE
 l7-gw-myapis            67s
@@ -53,101 +60,115 @@ l7-gw-myframework       67s
 l7-gw-mysubscriptions   67s
 ```
 
-### Configure Repository References
-Here we will configure repository references for our Gateway custom resource. Repository references are used by the Gateway controller to reconcile the resulting graphman bundles from our repositories to Gateways. This is tracked using annotations that are applied to each gateway pod (in ephemeral mode) or deployment (when there is a MySQL database configured).
+## 4. Configure Repository References
 
-- Open [gateway.yaml](./exercise4-resources/gateway.yaml) and configure repository references on line 37
+Now we will update our Gateway custom resource manifest to reference the Repositories that were just created. Repository references are used by the Gateway controller to reconcile the resulting Graphman bundles from our repositories to gateways. This is tracked using annotations that are applied to each gateway pod (in ephemeral mode) or deployment (when there is a MySQL database configured).
+
+Open this file, [`./exercise5-resources/gateway.yaml`](./exercise5-resources/gateway.yaml), and add the Repository references (~ line 37):
+
+```yaml
+...
+    singletonExtraction: false
+    repositoryReferences:
+    - name: l7-gw-myframework
+      enabled: true
+      type: static
+      encryption:
+        existingSecret: graphman-encryption-secret
+        key: FRAMEWORK_ENCRYPTION_PASSPHRASE
+    - name: l7-gw-myapis
+      enabled: true
+      type: dynamic
+      encryption:
+        existingSecret: graphman-encryption-secret
+        key: APIS_ENCRYPTION_PASSPHRASE
+    - name: l7-gw-mysubscriptions
+      enabled: true
+      type: dynamic
+      encryption:
+        existingSecret: graphman-encryption-secret
+        key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
+    initContainers:
+...
 ```
-repositoryReferences:
-  - name: l7-gw-myframework
-    enabled: true
-    type: static
-    encryption:
-      existingSecret: graphman-encryption-secret
-      key: FRAMEWORK_ENCRYPTION_PASSPHRASE
-  - name: l7-gw-myapis
-    enabled: true
-    type: dynamic
-    encryption:
-      existingSecret: graphman-encryption-secret
-      key: APIS_ENCRYPTION_PASSPHRASE
-  - name: l7-gw-mysubscriptions
-    enabled: true
-    type: dynamic
-    encryption:
-      existingSecret: graphman-encryption-secret
-      key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
-```
-Let's take a closer look at some of the fields
-#### type - static|dynamic
+
+Before we apply those changes, let's consider some of the Repository reference properties:
+
+#### type
+Repository references can be eithe static or dynamic.
+
 - static
-    - requires a gateway restart
-    - applied via a dynamic initContainer
-    - useful for infrastructure that is less frequent to change
-    - using tags is recommended!!
+    - Applied by the Layer7 Operator using a managed dynamic initContainer
+    - Applied statically via bootstrapping on gateway startup
+    - Updates require gateway restarts
+    - Useful for configuration that changes less frequently
+    - Using tags is recommended!!
 - dynamic
-    - applied automatically with no restarts required
-    - useful for frequent changes
-    - includes support for singleton configurations
-    - zero downtime
-#### encryption
-Certain entities (like stored passwords) can be encrypted for secure storage. The encryption configuration here allows us to provide a decryption key for the Graphman service. We will create the [graphman-encryption-secret](./exercise4-resources/graphman-encryption-secret.env) shortly.
+    - Applied by the Layer7 Operator using the Graphman API
+    - Applied dynamically via the Graphman API to running gateways
+    - Updates do not require gateway restarts
+    - Useful for configuration that changes frequently
+    - Includes support for singleton configurations
+    - Zero downtime
 
-- Create the [graphman-encryption-secret](./exercise4-resources/graphman-encryption-secret.env)
+#### encryption
+Certain entities (like stored passwords) can be encrypted for secure storage. The encryption property allows us to provide a decryption key for the Graphman service. We will provide the key(s) using the `graphman-encryption-secret` Kubernetes secret referenced in the Gateway custom resource above.
+
+Create the `graphman-encryption-secret` secret:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl create secret generic graphman-encryption-secret --from-env-file=./exercise4-resources/graphman-encryption-secret.env
+  kubectl create secret generic graphman-encryption-secret --from-env-file=./exercise5-resources/graphman-encryption-secret.env
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl create secret generic graphman-encryption-secret --from-env-file=exercise4-resources\graphman-encryption-secret.env
+  kubectl create secret generic graphman-encryption-secret --from-env-file=exercise5-resources\graphman-encryption-secret.env
   ```
 </details>
 <br/>
 
-### Singleton Configs
-You will see a config option called singletonExtraction on line 36 in [gateway.yaml](./exercise4-resources/gateway.yaml). Singletons in this context are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. It's easy to track this when there's an external MySQL database. In ephemeral mode, gateways have no awareness of additional cluster nodes or deployments.
+## 5. Singletons
 
-Singleton Extraction aims to mitigate this by designating one gateway pods as a leader and only applying scheduled tasks and jms listeners to that pod. This comes with a current limitation to dynamic repository references only. 
+Singletons are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. These don't require special support when deploying gateways backed by a shared MySQL database. However, they do need special support when deploying ephemeral gateways that don't share a database.
 
-### Update the Gateway
-Using our newly configured [gateway.yaml](./exercise4-resources/gateway.yaml) we will now update our gateway.
+Notice the singletonExtraction property on line 36 in [`./exercise4-resources/gateway.yaml`](./exercise4-resources/gateway.yaml). Singleton extraction supports using singletons for ephemeral gateways by designating one gateway pod as a leader and only applying scheduled tasks and JMS listeners to that pod. This is currently only supported by dynamic repository references. 
 
-- Make sure that you still have a separate terminal with the Layer7 Operator logs (you may have to set your KUBECONFIG environment variable in the new terminal)
-```
-kubectl logs -f -l control-plane=controller-manager -c manager
-```
-- Update the Gateway
+## 6. Update the Gateway Custom Resource
+
+We will now apply the above changes to the Gateway custom resource. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise4-resources/gateway.yaml
+  kubectl apply -f ./exercise5-resources/gateway.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise4-resources\gateway.yaml
+  kubectl apply -f exercise5-resources\gateway.yaml
   ```
 </details>
 <br/>
 
 This will trigger an update to your Gateway deployment with the addition of the static repository.
 
-### Inspect the Gateway
-Let's take a look at the Gateway CR
+## 7. Inspect the Gateway Custom Resource
+
+Let's take a look at the Gateway custom resource:
 ```
 kubectl get gateway ssg -oyaml
 ```
-output (status)
-```
+
+Here is an example of the previous command's output (for just the status property):
+```yaml
+...
 status:
   conditions:
   - lastTransitionTime: "2023-09-18T19:13:44Z"
@@ -201,12 +222,18 @@ status:
   version: 11.0.00_CR1
 ```
 
-### Inspect the Gateway Deployment
+## 8. Inspect the Gateway Deployment
+
+First, let's take a look at the gateway deployment:
+
 ```
 kubectl describe deployment ssg
 ```
-output (initContainers)
-```
+
+Here is an example of the previous command's output (for just the Init Containers property):
+
+```yaml
+...
 Init Containers:
   workshop-init:
    Image:        harbor.sutraone.com/mock/workshop-init:1.0.0
@@ -226,26 +253,33 @@ Init Containers:
      /graphman/localref/l7-gw-myframework-repository-main from l7-gw-myframework-repository-main (rw)
      /graphman/secrets/l7-gw-myframework from graphman-repository-secret (rw)
      /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/graphman/0 from ssg-repository-bundle-dest (rw)
+...
 ```
-#### Inspect the Gateway Pod
-- Get pods
+
+Next, let's look at the gateway pod:
+
 ```
 kubectl get pods
 ```
-output (wait for the ssg pod to hit READY 1/1 before proceeding to the next step)
+
+Here is an example of the previous command's output:
+
 ```
 NAME                                                  READY   STATUS    RESTARTS   AGE
 layer7-operator-controller-manager-77bb65f7fb-87gv4   2/2     Running   0          4d16h
 ssg-74bc56d55c-cgctb                                  1/1     Running   0          6m38s
 ```
-- Get ssg pod
+
+_**Note: Wait for the ssg pod to show READY 1/1 before proceeding to the next step.**_
+
+Use the ssg pod name output from the above command in the below command:
 ```
 kubectl get pod <pod-name> -oyaml
 ```
-output (annotations)
-```
-apiVersion: v1
-kind: Pod
+
+Here is an example of the previous command's output (for just the metadata property):
+```yaml
+...
 metadata:
   annotations:
     security.brcmlabs.com/l7-gw-myapis-dynamic: 8fc74669689abe781645dac214ebf26eb7480c78
@@ -259,42 +293,46 @@ metadata:
     app.kubernetes.io/part-of: ssg
     management-access: leader
     pod-template-hash: 74bc56d55c
+...
 ```
 
-- Trigger an update
+The Layer7 Operator uses the dynamic repository checksums to keep gateway configuration in sync with repository configuration. We can trigger a dynamic gateway update by modifying one of the dynamic repository checksums. Edit the gateway pod and make a change to one of the dynamic respository checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+
+Use the ssg pod name output from the above command in the below command:
 ```
 kubectl edit pod <pod-name>
 ```
-Update one of the checksums
 
-### Test your Gateway Deployment
+You should see the change event in the Layer7 Operator logs, and you should see that your change was reverted by the Layer7 Operator if you check your gateway pod's annotations again:
 ```
-kubectl get svc
-
-NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
-
-if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
-
-NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
+kubectl get pod <pod-name> -oyaml
 ```
 
-If EXTERNAL-IP is stuck in \<PENDING> state
-```
-kubectl port-forward svc/ssg 9443:9443
-```
+## 9. Test the Gateway Deployment
+
+Now, let's connect test our gateway by calling an API and connecting with Policy Manager to view the gateway's configuration that was applied using Repository references
+
+First, find the external IP address for the gateway service in your namespace:
 
 ```
-curl https://34.89.84.69:8443/api1 -H "client-id: D63FA04C8447" -k
+kubectl get svc ssg
+```
 
-or if you used port-forward
-
-curl https://localhost:9443/api1 -H "client-id: D63FA04C8447" -k
+Here is an example of the previous command's output. In this example, the external IP address is **34.168.26.20**. Yours will be different.
 
 ```
-Response
+NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)                         AGE
+ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
+
+Next, try calling an API on the gateway using your external IP address. For example:
+
+```
+curl -k -H "client-id: D63FA04C8447" https://<your-external-ip>:8443/api1
+```
+
+The API should respond like so:
+```json
 {
   "client" : "D63FA04C8447",
   "plan" : "plan_a",
@@ -303,28 +341,13 @@ Response
 }
 ```
 
-##### Sign into Policy Manager
-Policy Manager access is less relevant in a deployment like this because we haven't specified an external MySQL database, any changes that we make will only apply to the Gateway that we're connected to and won't survive a restart. It is still useful to check what's been applied. In our configuration we could set the following which would override the default application port configuration.
+Finally, connect to your gateway with Policy Manager to view the statically and dynamically applied configuration:
 ```
-...
-listenPorts:
-  harden: true
-...
-```
-This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection.
-
-```
-username: admin
-password: 7layer
-gateway: 35.189.116.20:9443
-```
-or if you used port-forward
-```
-username: admin
-password: 7layer
-gateway: localhost:9443
+User Name: admin
+Password: 7layer
+Gateway: <your-external-ip>
 ```
 
-### Start [Exercise 5](./lab-exercise5.md)
+# Start [Lab Exercise 6](./lab-exercise6.md)
 
 

@@ -1,8 +1,25 @@
 # Lab Exercise 1
 
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Comparing Environments](#3-comparing-environments)
+1. [Understanding the Example Gateway Configuration](#4-understanding-the-example-gateway-configuration)
+1. [Configure the graphman-client](#5-configure-the-graphman-client)
+1. [Export Configuration](#6-export-configuration)
+1. [Config Bundle Arithmetics](#7-config-bundle-arithmetics)
+1. [Apply Configuration](#8-apply-configuration)
+1. [View the Result](#9-view-the-result)
+1. [Create a Configuration Source of Truth](#10-create-a-configuration-source-of-truth)
+
+## 1. Prerequisites
+
+Please make sure you've completed the steps [here](./readme.md) before beginning this exercise.
+
+## 2. Overview
+
 This lab will introduce you to Graphman and its tooling for creating gateway configuration which will be deployed in Kubernetes as part of the following examples.
 
-## 1. Comparing Environments
+## 3. Comparing Environments
 
 In this workshop, we have development and production gateways. At the beginning of the workshop, their configuration is divergent. You can see this divergence by calling the same API in both environments as below:
 
@@ -11,7 +28,7 @@ Call the API in development:
 curl https://mydevgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 ```
 
-Call the API in production
+Call the API in production:
 ```
 curl https://myprodgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 ```
@@ -20,7 +37,7 @@ curl https://myprodgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 
 You should see different responses between development and production which is a reflection that the respective gateway configuration is divergent.
 
-## 2. Understanding the Example Gateway Configuration
+## 4. Understanding the Example Gateway Configuration
 
 This example gateway organization is inspired by real-world customer setups that have been proven to scale. The actual APIs are self-contained and can be used as-is but these are just examples, the configuration itself is not meant to be used for your own project, but rather for understanding how to best manage your gateway configuration.
 
@@ -53,7 +70,7 @@ As illustrated in the policy above, the membership to consumption tiers are mana
 
 You can empower a business unit responsible for enforcing these SLAs to manage these cluster-wide properties separately from the framework configuraiton. As you will see in later examples, this will not require any specific Layer7 expertise.
 
-## 3. Configure the graphman-client
+## 5. Configure the graphman-client
 
 Set the GRAPHMAN_HOME environment variable:
 
@@ -77,7 +94,7 @@ Set the GRAPHMAN_HOME environment variable:
 
 Point graphman to the development environment by editing `graphman.configuration` file:
 
-```
+```json
 {
     "sourceGateway": {
         "address": "https://mydevgw.brcmlabs.com/graphman",
@@ -96,7 +113,7 @@ Point graphman to the development environment by editing `graphman.configuration
 }
 ```
 
-## 4. Export Configuration
+## 6. Export Configuration
 
 Using graphman-client, you can export configuration from the development environment.
 
@@ -228,7 +245,7 @@ You can now use this query which lets you extract the CWPs that control the SLA 
 </details>
 <br/>
 
-## 5. Config Bundle Arithmetics
+## 7. Config Bundle Arithmetics
 
 Bundles can be combined or subtracted from one another. In our scenario, we want to separate the membership control from the framework configuration bundle. Because we constructed the framework bundle by folder with dependencies and the cluster-wide properties that control the memberships are dependencies, they are automatically included. Using the diff command, you can eliminate this overlap between the two bundles:
 
@@ -266,7 +283,7 @@ Sometimes, you want to combine configuration from different sources into a singl
 </details>
 <br/>
 
-## 6. Apply Configuration
+## 8. Apply Configuration
 
 > **_NOTE: When sharing this workshop environment with multiple users, anybody can change the configuration of the production gateway. It's possible that somebody might apply changes to production ahead of time and affect your ability to detect an expected change between development and production._**
 
@@ -294,7 +311,7 @@ You can also apply it dynamically to a gateway with the import command without r
 </details>
 <br/>
 
-## 7. View the result
+## 9. View the Result
 
 To validate that you sucesfully applied configuration change from dev to prod, you can call the APIs in each of those respective environments again and they should no longer produce divergent outputs.
 
@@ -312,7 +329,7 @@ curl https://myprodgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 
 They should now return the same 🤞
 
-## 8. Create a Configuration Source of Truth
+## 10. Create a Configuration Source of Truth
 
 In a cloud-native deployment, you would not apply configuration directly using Graphman. Instead, you would use Graphman to create a configuration source-of-truth which would be automatically applied statically or dynamically by the Layer7 Operator.
 
@@ -365,3 +382,5 @@ git push -u origin main
 ```
 </details>
 <br/>
+
+# Start [Lab Exercise 2](./lab-exercise2.md)

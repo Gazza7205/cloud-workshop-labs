@@ -1,116 +1,133 @@
 
 # Lab Exercise 7
-In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 5, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of APIs by organization. [See other exercises](./readme.md#lab-exercises).
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 5](./lab-exercise5.md), and is a pre-requisite.
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Message-Completed Global Policy Fragment](#3-message-completed-global-policy-fragment)
+1. [Configure the Gateway](#4-configure-the-gateway)
+1. [Update the Gateway](#5-update-the-gateway)
+1. [Call Test Services](#6-call-test-services)
+1. [Monitor the Gateway](#7-monitor-the-gateway)
 
-## Key concepts
-- [Create message completed policy](#create-message-completed-policy)
-- [Configuring the Gateway](#configuring-the-gateway)
-- [Update the Gateway](#update-the-gateway)
-- [Call Test services](#call-test-services)
-- [Monitor Gateway](#monitor-gateway)
+## 1. Prerequisites
 
-### Create message completed policy
-Create a message-completed policy with Telemetry Metric assertion. Select the type to be counter and attributes service.name, service.oid and service.resolutionUri
-Get organization id from request parameter, if not present set it to 'NONE'
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 6](./lab-exercise6.md) before beginning this exercise.
 
-Create a configmap containing the policy.
+## 2. Overview
+In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services take a query parameter which denote the organization to which client (caller) belongs to. We will use that parameter to monitor the usage of APIs by organization.
+
+## 3. Message-Completed Global Policy Fragment
+We will use the Telemetry Metric assertion in the message-completed global policy fragment to create a custom `usage_by_org` metric with org, service_name, serviceOid and serviceUrl attributes.
+
+Create a secret containing the policy bundle:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl create secret generic graphman-otel-message-complete --from-file=./exercise6-resources/otel_message_complete.json
+  kubectl create secret generic graphman-otel-message-complete --from-file=./exercise7-resources/otel_message_complete.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl create secret generic graphman-otel-message-complete --from-file=exercise6-resources\otel_message_complete.json
+  kubectl create secret generic graphman-otel-message-complete --from-file=exercise7-resources\otel_message_complete.json
   ```
 </details>
 <br/>
+
+The policy and assertion will appear as follows:
 
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
-### Configuring the Gateway
-Continue using the Gateway CRD file from exercise 5 [exercise5-resources/gateway.yaml](./exercise5-resources/gateway.yaml)
+## 4. Configure the Gateway
+Continue using the Gateway custom resource file from lab exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml)
 
-1. Add message complete secret bundle to _***spec.app.bundle***_
-</br> __* Uncomment lines 35 to 37 *__
+Add the new bundle by _**uncommenting lines 35 - 37**_:
 ```yaml
-bundle:
-  - type: graphman
-    source: secret
-    name: graphman-otel-test-services
-  - type: graphman
-    source: secret
-    name: graphman-otel-message-complete
+...
+    bundle:
+    - type: graphman
+      source: secret
+      name: graphman-otel-test-services
+    - type: graphman
+      source: secret
+      name: graphman-otel-message-complete
+    bootstrap:
+...
 ```
 
-### Update the Gateway
-Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile our new desired state with reality.
+## 5. Update the Gateway
+Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile the changes.
 
-1. Update the Gateway CR and verify that the gateway pod is restarted.
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/gateway.yaml
+  kubectl apply -f ./exercise6-resources/gateway.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\gateway.yaml
+  kubectl apply -f exercise6-resources\gateway.yaml
   ```
 </details>
 <br/>
 
+Check the status of the ssg pod:
 ```
 kubectl get pods
 ```
-Verify the age of ssg pod
+
+And wait until 2/2 containers in the ssg pod are READY. For example:
 ```
 NAME                                                  READY   STATUS      RESTARTS       AGE
 api-requests-5bvx2                                    0/1     Completed   0              5m38s
 layer7-operator-controller-manager-7c996ccfb6-9qsw6   2/2     Running     1 (108m ago)   109m
 ssg-56ff97b54d-nsx86                                  2/2     Running     0              116s
 ```
-### Call Test services.
-To generate some load, we will reuse the job from exercise6.
 
-1. Delete the job if already present (created as part of exercise6)
+## 6. Call Test Services
+We will reuse the job created in lab exercise 6 to generate some load and emit our new metric.
+
+First, delete the job that was created in lab exercise 6:
 ```
 kubectl delete job api-requests
 ```
-2. Submit the job
+
+Then, create the job again:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/test-services.yaml
+  kubectl apply -f ./exercise6-resources/test-services.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\test-services.yaml
+  kubectl apply -f exercise6-resources\test-services.yaml
   ```
 </details>
 <br/>
 
-### Monitor Gateway
-1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
-2. Search for 'Usage By Org' and click on the link.
-3. Select your Gateway from the 'Gateway' dropdown (workshopuser(n)-ssg)
-4. You should be able to see chart with api usage by organization as below.
+Watch the job run (making 1000 requests; with a 0 index):
+```
+kubectl logs -f job.batch/api-requests
+```
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/3084109f-fbb0-4471-986c-f8b71d65b819" /></kbd>
+## 7. Monitor the Gateway
+1. Login into [Kibana](https://kibana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
+1. Click the on **Analytics** tile on the Home page
+1. Click the **Dashboard** tile on the Analytics page
+1. Click the **Usage By Org** link on the Dashboards page
+1. Select and include your gateway (e.g. workshopuser99-ssg) from the **Gateway** dropdown field.
+1. You should be able to see API usage by organization for your gateway:
+
+![dashboard](./exercise7-resources/dashboard.png)
 
 
-### Start [Exercise 7](./lab-exercise7.md)
+# Start [Lab Exercise 8](./lab-exercise8.md)

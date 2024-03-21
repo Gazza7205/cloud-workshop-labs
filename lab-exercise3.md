@@ -1,29 +1,40 @@
-
 # Lab Exercise 3
+
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Gateway Management](#3-gateway-management)
+1. [Graphman Bundle](#4-graphman-bundle)
+1. [Restman Bundle](#5-restman-bundle)
+1. [Using Kustomize](#6-using-kustomize)
+1. [InitContainers](#7-initcontainers)
+1. [Configure the Gateway](#8-configure-the-gateway)
+1. [Update the Gateway](#9-update-the-gateway)
+1. [Validate the Update](#10-validate-the-update)
+
+
+## 1. Prerequisites
+
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 2](./lab-exercise2.md) before beginning this exercise.
+
+## 2. Overview
+
 This exercise should familiarize you with some of the additional features of the Layer7 Operator and introduce some of the standard Kubernetes concepts and features used throughout this workshop. [See other exercises](./readme.md#lab-exercises).
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 1](./lab-exercise1.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
+## 3. Gateway Management
 
-## Key concepts
-- [Creating a Kubernetes Secret for Gateway management](#gateway-management)
-- [Creating Kubernetes Secrets with Graphman Bundles](#graphman-bundle)
-- [Creating Kubernetes Secrets with Restman Bundles](#restman-bundle)
-- [Using Kustomize](#using-kustomize)
-- [InitContainers](#initcontainers)
-- [Configuring the Gateway](#configuring-the-gateway)
-- [Update the Gateway](#update-the-gateway)
+In this section, we will create and inspect a Kubernetes secret used to manage gateway admin credentials.
 
-### Gateway Management
-1. Create a Secret for Gateway Management Credentials
+First, create the secret:
 ```
 kubectl create secret generic gateway-secret --from-literal SSG_ADMIN_USERNAME=admin --from-literal SSG_ADMIN_PASSWORD=7layer
 ```
-2. Inspect the secret
+
+Then, inspect the secret:
 ```
 kubectl get secret gateway-secret -oyaml
 ```
-3. Using jsonpath to inspect values
+
+Try using `jsonpath` to inspect the secret values:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
@@ -46,9 +57,7 @@ kubectl get secret gateway-secret -oyaml
 </details>
 <br/>
 
-4. Base64 encoding strings for Kubernetes secrets
-
-The base64 encoded value in gateway-secret for SSG_ADMIN_PASSWORD is N2xheWVy (7layer). You might want to edit a Secret in place. Newlines should be omitted.
+If you need to edit a secret value in place, you must provide a base64 encoded value that does not contain newlines. For example, the base64 encoded value in gateway-secret for SSG_ADMIN_PASSWORD is `N2xheWVy` (for `7layer`).
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
@@ -67,33 +76,34 @@ The base64 encoded value in gateway-secret for SSG_ADMIN_PASSWORD is N2xheWVy (7
 </details>
 <br/>
 
-### Graphman Bundle
-There is a basic graphman bundle that contains a single cluster-wide property [here](./exercise2-resources/cluster-property.json). Following the same process as before we can create a secret with it
+## 4. Graphman Bundle
 
-1. Create the secret
+There is a basic Graphman bundle that contains a single cluster-wide property here, [./exercise3-resources/cluster-property.json](./exercise3-resources/cluster-property.json). Following the same process as before, we will create a secret that contains this bundle.
+
+First, create the secret:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl create secret generic graphman-cluster-property-bundle --from-file=./exercise2-resources/cluster-property.json
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=./exercise3-resources/cluster-property.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl create secret generic graphman-cluster-property-bundle --from-file=exercise2-resources\cluster-property.json
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=exercise3-resources\cluster-property.json
   ```
 </details>
 <br/>
 
-2. Inspect the secret
-Note here that the key is cluster-property.json
+Then, inspect the secret:
 ```
 kubectl get secret graphman-cluster-property-bundle -oyaml
 ```
-output
-```
+
+Here is an example of the previous command's output (note that the key is cluster-property.json):
+```yaml
 apiVersion: v1
 data:
   cluster-property.json: ewogICJjbHVzdGVyUHJvcGVydGllcyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiYmFja2VuZDEiLAogICAgICAiZGVzY3JpcHRpb24iOiAiYSBjd3AiLAogICAgICAiaGlkZGVuUHJvcGVydHkiOiBmYWxzZSwKICAgICAgInZhbHVlIjogImh0dHBzOi8vbW9jay5icmNtbGFicy5jb20iCiAgICB9CiAgXQp9Cg==
@@ -106,51 +116,55 @@ metadata:
   uid: 6f567545-9f75-4d38-9533-63c759cc62e8
 type: Opaque
 ```
-When creating secrets from file you can specify the key, this works for kustomize too which we will be using shortly.
 
-This command will fail because the secret already exists.
+When creating secrets from file you can specify the key. This also works for [kustomize](https://kustomize.io/) which we will be using shortly.
+
+For example only (these commands will fail because the secret already exists):
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=./exercise2-resources/cluster-property.json
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=./exercise3-resources/cluster-property.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=exercise2-resources\cluster-property.json
+  kubectl create secret generic graphman-cluster-property-bundle --from-file=myclusterproperty.json=exercise3-resources\cluster-property.json
   ```
 </details>
 <br/>
 
-### Restman Bundle
-There is a basic Restman bundle that contains a single cluster-wide property [here](./exercise2-resources/cluster-property.bundle). Following the same process as before we can create a secret with it
+## 5. Restman Bundle
+Though the Layer7 Operator is designed to primarily work with Graphman, Restman bundles can also be boostrapped to container gateways managed by the Layer7 Opertor using secrets or other mechanisms.
 
-1. Create the secret
+There is a basic Restman bundle that contains a single cluster-wide property here, [./exercise3-resources/cluster-property.bundle](./exercise3-resources/cluster-property.bundle). Following the same process as before, we will create a secret that contains this bundle.
+
+First, create the secret:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl create secret generic restman-cluster-property-bundle --from-file=./exercise2-resources/cluster-property.bundle
+  kubectl create secret generic restman-cluster-property-bundle --from-file=./exercise3-resources/cluster-property.bundle
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl create secret generic restman-cluster-property-bundle --from-file=exercise2-resources\cluster-property.bundle
+  kubectl create secret generic restman-cluster-property-bundle --from-file=exercise3-resources\cluster-property.bundle
   ```
 </details>
 <br/>
 
-2. Inspect the secret
+Then, inspect the secret:
 ```
 kubectl get secret restman-cluster-property-bundle -oyaml
 ```
-output
-```
+
+Here is an example of the previous command's output:
+```yaml
 apiVersion: v1
 data:
   cluster-property.bundle: PGw3OkJ1bmRsZSB4bWxuczpsNz0iaHR0cDovL25zLmw3dGVjaC5jb20vMjAxMC8wNC9nYXRld2F5LW1hbmFnZW1lbnQiPgogICAgPGw3OlJlZmVyZW5jZXM+CiAgICAgICAgPGw3Okl0ZW0+CiAgICAgICAgICAgIDxsNzpOYW1lPmJhY2tlbmQyPC9sNzpOYW1lPgogICAgICAgICAgICA8bDc6SWQ+aGM1N2NjMjYyMWI5MmEyMzMxZjYzY2MwZjBjMTQwMmM8L2w3OklkPgogICAgICAgICAgICA8bDc6VHlwZT5DTFVTVEVSX1BST1BFUlRZPC9sNzpUeXBlPgogICAgICAgICAgICA8bDc6UmVzb3VyY2U+CiAgICAgICAgICAgICAgICA8bDc6Q2x1c3RlclByb3BlcnR5IGlkPSJmYjU3Y2MyNjIxYjkyYTUzMzFmNjNjYzBmMGMzNDAxZCI+CiAgICAgICAgICAgICAgICAgICAgPGw3Ok5hbWU+YmFja2VuZDI8L2w3Ok5hbWU+CiAgICAgICAgICAgICAgICAgICAgPGw3OlZhbHVlPmh0dHBzOi8vbW9jazEuYnJjbWxhYnMuY29tPC9sNzpWYWx1ZT4KICAgICAgICAgICAgICAgIDwvbDc6Q2x1c3RlclByb3BlcnR5PgogICAgICAgICAgICA8L2w3OlJlc291cmNlPgogICAgICAgIDwvbDc6SXRlbT4KICAgIDwvbDc6UmVmZXJlbmNlcz4KICAgIDxsNzpNYXBwaW5ncz4KICAgICAgICA8bDc6TWFwcGluZyBhY3Rpb249Ik5ld09yVXBkYXRlIiBzcmNJZD0iZmI1N2NjMjYyMWI5MmE1MzMxZjYzY2MwZjBjMzQwMWQiIHR5cGU9IkNMVVNURVJfUFJPUEVSVFkiPgogICAgICAgICAgICA8bDc6UHJvcGVydGllcz4KICAgICAgICAgICAgICAgIDxsNzpQcm9wZXJ0eSBrZXk9Ik1hcEJ5Ij4KICAgICAgICAgICAgICAgICAgICA8bDc6U3RyaW5nVmFsdWU+bmFtZTwvbDc6U3RyaW5nVmFsdWU+CiAgICAgICAgICAgICAgICA8L2w3OlByb3BlcnR5PgogICAgICAgICAgICAgICAgPGw3OlByb3BlcnR5IGtleT0iTWFwVG8iPgogICAgICAgICAgICAgICAgICAgIDxsNzpTdHJpbmdWYWx1ZT5iYWNrZW5kMjwvbDc6U3RyaW5nVmFsdWU+CiAgICAgICAgICAgICAgICA8L2w3OlByb3BlcnR5PgogICAgICAgICAgICA8L2w3OlByb3BlcnRpZXM+CiAgICAgICAgPC9sNzpNYXBwaW5nPgogICAgPC9sNzpNYXBwaW5ncz4KPC9sNzpCdW5kbGU+
@@ -164,13 +178,13 @@ metadata:
 type: Opaque
 ```
 
-### Using Kustomize
+## 6. Using Kustomize
 [Kustomize](https://kustomize.io/) introduces a template-free way to customize application configuration that simplifies the use of off-the-shelf applications. It is now built into kubectl as `apply -k`.
 
-Creating secrets or configmaps by hand can be useful for once off commands, but Kustomize is significantly more powerful (we're scratching the surface) and useful for idempotence. In this step we will go through how to create the same secrets with Kustomize.
+Creating secrets or configmaps by hand can be useful for one off commands, but Kustomize is significantly more powerful (we're scratching the surface) and useful for idempotence. In this step we will go through how to create the same secrets with Kustomize.
 
-[kustomization.yaml](./exercise2-resources/kustomization.yaml) is preconfigured to create 3 secrets using the built-in secret generator. 
-```
+[./exercise3-resources/kustomization.yaml](./exercise3-resources/kustomization.yaml) is preconfigured to create 3 secrets using the built-in secret generator. 
+```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 generatorOptions:
@@ -186,31 +200,37 @@ secretGenerator:
     - ./cluster-property.bundle
 ```
 
-1. Create the Secrets using Kustomize
-Kustomize expects a folder with a file called kustomization.yaml
+Create the secrets using Kustomize. Kustomize expects a folder with a file called kustomization.yaml:
 ```
-kubectl apply -k exercise2-resources
+kubectl apply -k exercise3-resources
 ```
-Ouput:
+
+Because we had previously created these secrets, the output of the previous command may have warnings like these (that you can ignore):
 ```
+Warning: resource secrets/gateway-secret is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
 secret/gateway-secret configured
+Warning: resource secrets/graphman-cluster-property-bundle is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+secret/graphman-cluster-property-bundle configured
+Warning: resource secrets/restman-cluster-property-bundle is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+secret/restman-cluster-property-bundle configured
+```
+
+If you run the same command again, you will not see those warnings. For example:
+```
+secret/gateway-secret unchanged
 secret/graphman-cluster-property-bundle configured
 secret/restman-cluster-property-bundle configured
 ```
-You may receive this warning which can be ignored
-```
-Warning: resource secrets/graphman-cluster-property-bundle is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
-```
 
-### InitContainers
-InitContainers are specialized containers that run before app containers in a Pod. Init containers can contain utilities or setup scripts not present in an app image. They are also useful for copying custom configuration as we will see now.
+## 7. InitContainers
+InitContainers are special containers that run before application containers in a pod. InitContainers can contain utilities or setup scripts not present in the application image. They can also share file system volumes with the application container making them useful for copying custom configuration as we will see now.
 
-There is a basic initContainer [here](./exercise2-resources/basic-initcontainer/). If you're familiar with the Gateway Helm Chart, you'll recognize the file/folder structure. You can also check out the examples [here](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more details if you're still unsure after this session.
+There is a basic initContainer here, [./exercise2-resources/basic-initcontainer](./exercise2-resources/basic-initcontainer/). If you're familiar with the Gateway Helm Chart, you'll recognize the file/folder structure. There are additional examples [here](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) if you want to learn more about using initContainers with Layer7 API Gateways.
 
-The Gateway initContainer skeleton that we provide works with a shared volume (/opt/docker/custom) and a bootstrap script that moves files from this folder to the correct locations on the Gateway Container.
+The basic initContainer that we provide works with a shared volume (/opt/docker/custom) and a bootstrap script that moves files from this folder to the correct locations on the gateway container during startup.
 
-This is what the initContainer does
-```
+This is what the initContainer does:
+```bash
 run_custom_scripts() {
         scripts=$(find "./scripts" -type f 2>/dev/null)
         for script in $scripts; do
@@ -236,7 +256,7 @@ copyFiles() {
 copyFiles
 ```
 This is what the bootstrap script on the Gateway does
-```
+```bash
 #!/bin/bash
 BASE_CONFIG_DIR="/opt/docker/custom"
 GRAPHMAN_CONFIG_DIR="/opt/docker/graphman"
@@ -284,7 +304,6 @@ function copy() {
     done
 }
 
-
 function gunzip() {
     TYPE=$1
     EXT=$2
@@ -330,95 +349,117 @@ copy "custom health checks" ".sh" $CUSTOM_HEALTHCHECK_SCRIPTS_DIR $TARGET_HEALTH
 run "custom shell scripts" ".sh" $CUSTOM_SHELL_SCRIPTS_DIR
 ```
 
-### Configuring The Gateway
+## 8. Configure The Gateway
 We can now update our Gateway Custom Resource with all of the additional parts that we've configured.
 
-For this we will be configuring [gateway.yaml](./exercise2-resources/gateway.yaml).
+For this we will be configuring this file, [`./exercise3-resources/gateway.yaml`](./exercise3-resources/gateway.yaml).
 
-1. Gateway Management Secret
+Additional documentation for Gateway custom resources can be found [here](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource).
 
-uncomment line 32 and remove username/password
-```
-management:
-  secretName: gateway-secret
-```
-2. Bundles
-line 26 - replace the empty array with the following bundles that we created.
-```
-bundle:
-  - type: restman
-    source: secret
-    name: restman-cluster-property-bundle
-  - type: graphman
-    source: secret
-    name: graphman-cluster-property-bundle
-```
-3. initContainers
-line 27 - enable the bootstrap script and add an initContainer
-```
-bootstrap:
-  script:
-    enabled: true
-initContainers:
-- name: workshop-init
-  image: harbor.sutraone.com/mock/workshop-init:1.0.0
-  imagePullPolicy: IfNotPresent
-  volumeMounts:
-  - name: config-directory
-    mountPath: /opt/docker/custom
+First, reference the gateway secret that we created by uncommenting `secretName` (~ line 32) and deleting the following `username` and `password` lines. For example:
+
+```yaml
+...
+    management:
+      secretName: gateway-secret
+      service:
+...
 ```
 
-### Update the Gateway
-Now that we've configured our Gateway Custom Resource to use secrets for Gateway management, bundles, initContainers and the bootstrap script we can now send the updated manifest into Kubernetes. The Layer7 Operator will then reconcile our new desired state with reality.
+Next, enable the bootstrap script (~ line 27) and add an initContainer. For example:
 
-1. Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
+```yaml
+...
+    bundle: []
+    bootstrap:
+      script:
+        enabled: true
+    initContainers:
+    - name: workshop-init
+      image: harbor.sutraone.com/mock/workshop-init:1.0.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+      - name: config-directory
+        mountPath: /opt/docker/custom
+    management:
+...
+```
+
+Finally, references the bundles that we created by replacing the bundle array (~ line 26) as follows:
+
+```yaml
+...
+        cpu:
+    bundle:
+    - type: restman
+      source: secret
+      name: restman-cluster-property-bundle
+    - type: graphman
+      source: secret
+      name: graphman-cluster-property-bundle
+    bootstrap:
+...
+```
+
+## 9. Update The Gateway
+We can now apply the Gateway custom cesource manifest in Kubernetes. The Layer7 Operator will then reconcile actual state with our new desired state.
+
+First, if you're not still tailing the Layer7 Operator logs from the previous lab exercise, then start doing that now in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal):
+
 ```
 kubectl logs -f -l control-plane=controller-manager -c manager
 ```
 
-2. Update the Gateway CR
+Next, apply the updated manifest:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise2-resources/gateway.yaml
+  kubectl apply -f ./exercise3-resources/gateway.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise2-resources\gateway.yaml
+  kubectl apply -f exercise3-resources\gateway.yaml
   ```
 </details>
 <br/>
 
-3. Get the Gateway Loadbalancer address
+## 10. Validate the Update
+Now test the update by calling an API and connecting with Policy Manager.
+
+First, find the external IP address for the gateway service in your namespace:
+
 ```
 kubectl get svc ssg
 ```
-output
+
+Here is an example of the previous command's output. In this example, the external IP address is **34.168.26.20**. Yours will be different.
+
 ```
 NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)                         AGE
 ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
 
-4. Test the bootstrapped service
+Next, try calling an API on the gateway using your external IP address. For example:
+
 ```
-curl https://34.168.26.20:8443/helloworld -k
+curl -k https://<your-external-ip>:8443/helloworld
 ```
-output
+
+The API should respond as follows:
 ```
 Hello World!
 ```
 
-5. Login to Policy Manager
+Finally, connect to your gateway with Policy Manager to view the bootstrapped bundles:
 
-- Open Policy Manager and view the bootstrapped components.
 ```
 User Name: admin
 Password: 7layer
-Gateway: 34.168.26.20
+Gateway: <your-external-ip>
 ```
 
-### Start [Exercise 3](./lab-exercise3.md)
+# Start [Lab Exercise 4](./lab-exercise4.md)

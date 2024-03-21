@@ -1,33 +1,35 @@
-# Lab Exercise 
-This exercise introduces how to use external kubernetes secrets as Gateway Stored Passwords. [See other exercises](./readme.md#lab-exercises).
+# Lab Exercise 9
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 7](./lab-exercise7.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Create Kubernetes Secret](#3-create-kubernetes-secret)
+1. [Create Resources](#4-create-resources)
+1. [Configure the Gateway](#5-configure-the-gateway)
+1. [Update the Gatewayx](#6-update-the-gateway)
+1. [Inspect the Gateway](#7-inspect-the-gateway)
+1. [Test your Gateway Deployment](#8-test-your-gateway-deployment)
 
-## Key concepts
-- [Create Kubernetes Secret](#create-kubernetes-secret)
-- [Configure the Gateway](#configure-the-gateway)
-- [Update the Gateway](#update-the-gateway)
-- [Inspect the Gateway](#inspect-the-gateway)
-- [Test your Gateway Deployment](#test-your-gateway-deployment)
-e
-### Important
-- Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
-```
-kubectl logs -f -l control-plane=controller-manager -c manager
-```
+## 1. Prerequisites
 
-### Create Kubernetes Secret
-Kubernetes Secrets are stored as base64 encoded strings without any encryption, Graphman accepts encrypted values and decrypts them with either the clusterPassphrase or a user supplied passphrase.
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 8](./lab-exercise8.md) before beginning this exercise.
 
-1. Encrypt a value (there may be a warning about the key deriviation which we will ignore for now.)
+## 2. Overview
+
+This exercise introduces how to synchronize external Kubernetes secrets with stored passwords on gateways.
+
+## 3. Create Kubernetes Secret
+
+Kubernetes secrets are stored as base64 encoded strings without any encryption. Graphman accepts encrypted values and decrypts them with either the clusterPassphrase or a user supplied passphrase.
+
+First, encrypt a value (there may be a warning about the key deriviation which we will ignore for now):
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
   echo -n "myothersupersecretvalue" | openssl enc -aes-256-cbc -md sha256 -pass pass:7layer -a
   ```
-  Output:
+
+  Here is an example of the previous command's output:
   ```
   U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
   ```
@@ -38,110 +40,144 @@ Kubernetes Secrets are stored as base64 encoded strings without any encryption, 
   ```
   echo|set /p="myothersupersecretvalue"|"C:\Program Files\Git\usr\bin\openssl" enc -aes-256-cbc -md sha256 -pass pass:7layer -a
   ```
-  Output:
+
+  Here is an example of the previous command's output:
   ```
   U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
   ```
 </details>
 <br/>
 
-2. Create a simple secret
-Note that mysupersecret2 is the encrypted value that we derived in the previous step. This provides encryption for this value at rest in Kubernetes.
+Next, create the Kubernetes secret with that encrypted value (i.e. replace `<encrypted-value>` in the below command with the outputed value of the previous command):
 ```
-kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=<encrypted-value>
 ```
-3. Create the exercise 8 resources
-This step will create a graphman bundle that exposes a very simple endpoint that returns Gateway Stored Passwords in plaintext and enable access to the GCP Secret Manager via the external secrets operator.
+
+## 4. Create Resources
+
+This step uses Kustomize to create a Kubernetes secret with a Graphman bundle with a service that can return stored password values from the gateway (for demonstrative purposes).
+
+It also integrates Kubernetes with GCP Secret Manager via the [external secrets operator](https://external-secrets.io/latest/) (so the external secrets operator can create Kubernetes secrets for GCP Secret Manager secrets). GCP Secret Manager is just one of [many external secret management providers](https://external-secrets.io/latest/provider/aws-secrets-manager/) supported by the external secrets operator.
+
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -k ./exercise8-resources
+  kubectl apply -k ./exercise9-resources
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -k exercise8-resources
+  kubectl apply -k exercise9-resources
   ```
 </details>
 <br/>
 
-In a few seconds there will be a secret called database-credentials-gcp created in your namespace. The [external secrets operator](https://external-secrets.io/latest/) creates a local copy of the external secret so that we can use it in Kubernetes. The external secrets operator has integrations for a variety of secret management [providers](https://external-secrets.io/latest/provider/aws-secrets-manager/).
+In a few moments, you can find a Kubernetes secret created by the external secrets operator from a GCP Secret Manager secret:
+
 ```
 kubectl get secret database-credentials-gcp -oyaml
 ```
 
-### Configure the Gateway
-Update [exercise8-resources/gateway.yaml](./exercise8-resources/gateway.yaml).
+## 5. Configure the Gateway
 
-We need to add two things to this file
+We will now configure the Gateway custom resource, [`exercise9-resources/gateway.yaml`](./exercise9-resources/gateway.yaml), to include the Graphman bundle secret and the external secrets.
 
-- The new bundle we created
-```
-bundle:
-  ...
-  - type: graphman
-    source: secret
-    name: graphman-secret-reader-bundle
-```
-- External secret references
-```
-externalSecrets:
-  - name: database-credentials-gcp
-    enabled: true
-    description: GCP Database credentials
-    variableReferencable: true
-  - name: mysupersecrets
-    enabled: true
-    description: top secret
-    variableReferencable: true
-    encryption:
-      passphrase: 7layer
-      existingSecret: ""
-  - name: private-key-secret
-    enabled: true
-    description: a private key
-    variableReferencable: false
+First, under line 33, insert the new bundle (i.e `graphman-secret-reader-bundle`):
+```yaml
+...
+    bundle:
+      - type: restman
+        source: secret
+        name: restman-cluster-property-bundle
+      - type: graphman
+        source: secret
+        name: graphman-cluster-property-bundle
+      - type: graphman
+        source: secret
+        name: graphman-secret-reader-bundle
+    bootstrap:
+...
 ```
 
-### Update the Gateway
+Then, on line 26, remove the array brackets (e.g. `[]`), and below that line add the external secret references:
+```yaml
+...
+        cpu: 2
+    externalSecrets:
+    - name: database-credentials-gcp
+      enabled: true
+      description: GCP Database credentials
+      variableReferencable: true
+    - name: mysupersecrets
+      enabled: true
+      description: top secret
+      variableReferencable: true
+      encryption:
+        passphrase: 7layer
+        existingSecret: ""
+    - name: private-key-secret
+      enabled: true
+      description: a private key
+      variableReferencable: false
+    bundle:
+...
+```
+
+## 6. Update the Gateway
+
+First, if you're not still tailing the Layer7 Operator logs from previous lab exercises, then start doing that now in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal).
+
+```
+kubectl logs -f -l control-plane=controller-manager -c manager
+```
+
+Then, apply the above changes to the Gateway custom resource. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise8-resources/gateway.yaml
+  kubectl apply -f ./exercise9-resources/gateway.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise8-resources\gateway.yaml
+  kubectl apply -f exercise9-resources\gateway.yaml
   ```
 </details>
 <br/>
 
-### Inspect the Gateway
-- Get pods
+## 7. Inspect the Gateway
+
+Now, let's look at the gateway pod:
+
 ```
 kubectl get pods
 ```
-output (wait for the ssg pod to hit READY 1/1 before proceeding to the next step)
+
+Here is an example of the previous command's output:
+
 ```
-NAME                                                 READY   STATUS    RESTARTS   AGE
-layer7-operator-controller-manager-6cb57584d-n9dlz   2/2     Running   0          4d1h
-ssg-6c56b6944b-hr497                                 1/1     Running   0          3h48m
+NAME                                                  READY   STATUS    RESTARTS   AGE
+layer7-operator-controller-manager-77bb65f7fb-87gv4   2/2     Running   0          4d16h
+ssg-74bc56d55c-cgctb                                  1/1     Running   0          6m38s
 ```
-- Get ssg pod
+
+_**Note: Wait for the ssg pod to show READY 1/1 before proceeding to the next step.**_
+
+Use the ssg pod name output from the above command in the below command:
 ```
 kubectl get pod <pod-name> -oyaml
 ```
-output (annotations)
-```
-apiVersion: v1
-kind: Pod
+
+Here is an example of the previous command's output (for just the metadata property):
+```yaml
+...
 metadata:
   annotations:
     security.brcmlabs.com/external-secret-database-credentials-gcp: 0935885ac45ab667fa9a8c30e040e867eebafd6c
@@ -158,42 +194,44 @@ metadata:
     app.kubernetes.io/part-of: ssg
     management-access: leader
     pod-template-hash: 6c56b6944b
+...
 ```
 
-- Trigger an update
+The Layer7 Operator uses the external secret checksums to keep gateway configuration in sync with external secrets. We can trigger a dynamic gateway update by modifying one of the external secret checksums. Edit the gateway pod and make a change to one of the external secret checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+
+Use the ssg pod name output from the above command in the below command:
 ```
 kubectl edit pod <pod-name>
 ```
-Update one of the checksums
 
-### Test your Gateway Deployment
+You should see the change event in the Layer7 Operator logs, and you should see that your change was reverted by the Layer7 Operator if you check your gateway pod's annotations again:
 ```
-kubectl get svc
-
-NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
-
-if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
-
-NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
+kubectl get pod <pod-name> -oyaml
 ```
 
-If EXTERNAL-IP is stuck in \<PENDING> state
-```
-kubectl port-forward svc/ssg 9443:9443
-```
+## 8. Test your Gateway Deployment
+
+First, find the external IP address for the gateway service in your namespace:
 
 ```
-curl https://34.89.84.69:8443/secrets -k
+kubectl get svc ssg
+```
 
-or if you used port-forward
-
-curl https://localhost:9443/secrets -k
+Here is an example of the previous command's output. In this example, the external IP address is **34.168.26.20**. Yours will be different.
 
 ```
-Response
+NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)                         AGE
+ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
+
+Next, try call the secrets service on the gateway using your external IP address. For example:
+
+```
+curl -k https://<your-external-ip>:8443/secrets
+```
+
+The API should respond like so:
+```json
 {
   "gcp-credentials": {
      "database_username": "gateway",
@@ -206,26 +244,12 @@ Response
 }
 ```
 
-##### Sign into Policy Manager
-Policy Manager access is less relevant in a deployment like this because we haven't specified an external MySQL database, any changes that we make will only apply to the Gateway that we're connected to and won't survive a restart. It is still useful to check what's been applied. In our configuration we could set the following which would override the default application port configuration.
-```
-...
-listenPorts:
-  harden: true
-...
-```
-This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection. The [advanced example](../gateway/advanced-gateway.yaml) shows how this can be customised with your own ports.
+Finally, connect to your gateway with Policy Manager to view the stored passwords:
 
 ```
-username: admin
-password: 7layer
-gateway: 35.189.116.20:9443
-```
-or if you used port-forward
-```
-username: admin
-password: 7layer
-gateway: localhost:9443
+User Name: admin
+Password: 7layer
+Gateway: <your-external-ip>
 ```
 
 

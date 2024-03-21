@@ -1,24 +1,44 @@
 # Cloud Workshop Labs
+
+> _**Important: Use a browser to view this lab content during the workshop. Do not try to use the raw markdown content directly during the workshop.**_
+
+1. [Overview](#1-overview)
+1. [Prerequisites](#2-prerequisites)
+1. [Share GitHub ID](#3-share-github-id)
+1. [Prepare Folder](#4-prepare-folder)
+1. [Download Temporary License](#5-download-temporary-license)
+1. [Connect to Kubernetes](#6-connect-to-kubernetes)
+1. [Lab Exercises](#7-lab-exercises)
+
+## 1. Overview
 This repository contains step-by-step instructions for the Cloud Workshop Labs.
 
-## 1. Important
-Use a browser (or markdown preview pane) to view this lab content during the workshop. Do not try to use the raw markdown content directly during the workshop.
+[Setup Recording](./resources/setup-video.mp4)
 
 ## 2. Prerequisites
-- [kubectl (v1.27+)](https://kubernetes.io/docs/tasks/tools/)
+- Shared Kubernetes cluster prepared specifically for this workshop
+- Experience operating in a Linux/Mac/Windows terminal
+- This repository
 - [GitHub Account](https://github.com/signup)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) or [GitHub Desktop](https://docs.github.com/en/desktop/installing-and-authenticating-to-github-desktop/installing-github-desktop)
+- [kubectl (v1.27+)](https://kubernetes.io/docs/tasks/tools/)
+- [Node.js (v16+)](https://nodejs.org/en/download)
+- graphman-client ([v1.0.01](https://github.com/Layer7-Community/graphman-client/tree/release/v1.0.01) if using the pre-11.1 gateway combined image; [v1.1.0](https://github.com/Layer7-Community/graphman-client/tree/release/v1.1.00) if using a 11.1+ gateway image)
 - [Temurin OpenJDK 11](https://adoptium.net/temurin/releases/?version=11) (for Mac users; 11 or later depending on version of Layer7 Policy Manager deployed at the time of the workshop)
 - [Layer7 Policy Manager 11.0 CR1](https://support.broadcom.com/group/ecx/productfiles?sellable=APIENT990&release=11.0&os=MULTI-PLATFORM&servicePk=0000&language=EN) (or later depending on actual gateway version deployed at the time of the workshop)
-- [Node.js (v16+)](https://nodejs.org/en/download)
 
-## 3. Share your GitHub ID
+## 3. Share GitHub ID
 A private GitHub repository is used for sharing a temporary license and environment related information required by this workshop. You must share your GitHub ID with the workshop coordinator to be given access to the private repository.
 
-## 4. Download a Temporary License
+## 4. Prepare Folder
+Much of the work in these labs will be done at the command line in a terminal. It will be easier if you prepare a folder (e.g. `workshop`) inside of which you will copy many of the prerequisites and do much of the work. After the of the following steps, your folder should look something like this:
+
+![workshop-folder](resources/workshop-folder.png)
+
+## 5. Download Temporary License
 A temporary license has been provided for this workshop. Download the [license](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/license.xml) from the private repository.
 
-## 5. Connect to Kubernetes
+## 6. Connect to Kubernetes
 For this workshop, you will be assigned a user number and a corresponding namespace in a shared Kubernetes cluster. Download the [kubeconfig file for your user number](https://github.com/CAAPIM/cloud-workshop-labs-environment/tree/main/cloud-workshop/attendees) (e.g. `workshopuser(n).kubeconfig`) from the private repository.
 
 Update and execute the following command with the path to your kubeconfig file, and test your connection to the Kubernetes cluster:
@@ -49,20 +69,24 @@ Update and execute the following command with the path to your kubeconfig file, 
 </details>
 <br/>
 
-To avoid providing the `--kubeconfig` argument with every `kubectl` command, update and execute the following command with the path to your kubeconfig file to set the KUBECONFIG environment variable in your current shell. _**Note: This command will only set the environment variable in your current shell. You will need to repeat this command in new shells you open later, or use a more permanent option for setting environment variables in whatever operating system you are working with.**_
+To avoid providing the `--kubeconfig` argument with every `kubectl` command, update and execute the following command with the path to your kubeconfig file to set the KUBECONFIG environment variable in your current shell.
+
+> _**Note: This command will only set the environment variable in your current shell. You will need to repeat this command in new shells you open later, or use a more permanent option for setting environment variables in whatever operating system you are working with.**_
+
+> _**Note: Make sure you provide the absolute path to the kubeconfig file. If you provide a relative path, then `kubectl` will not find it after changing directories from the directory the provided path is relative to.**_
 
 <details>
   <summary>Linux/MacOS</summary>
 
   ```
-  export KUBECONFIG=/path/to/workshopuser(n).kubeconfig
+  export KUBECONFIG=/absolute/path/to/workshopuser(n).kubeconfig
   ```
 </details>
 <details>
   <summary>Windows</summary>
 
   ```    
-  set KUBECONFIG=c:\path\to\workshopuser(n).kubeconfig
+  set KUBECONFIG=c:\absolute\path\to\workshopuser(n).kubeconfig
   ```
 </details>
 <br/>
@@ -76,17 +100,17 @@ Expected response at the beginning of the workshop:
 No resources found in workshopuser(n) namespace.
 ```
 
-# Lab Exercises
+## 7. Lab Exercises
 - [Exercise 1](./lab-exercise1.md)
   - This exercise explores configuration as code concepts using Graphman.
 - [Exercise 2](./lab-exercise2.md)
   - This exercise should familiarize you with the basic concepts of the Layer7 Operator.
 - [Exercise 3](./lab-exercise3.md)
-  - This exercise introduces initContainers and bundles (restman/graphman)
+  - This exercise introduces initContainers and bundles (restman/graphman).
 - [Exercise 4](./lab-exercise4.md)
-  - This exercise introduces the repository custom resource
+  - This exercise introduces the repository custom resource.
 - [Exercise 5](./lab-exercise5.md)
-  - This exercise combines the previous examples in more depth
+  - This exercise combines the previous examples in more depth.
 - [Exercise 6](./lab-exercise6.md)
   - This exercise enables Open Telemetry and Service Metrics on Gateway.
 - [Exercise 7](./lab-exercise7.md)
@@ -94,4 +118,4 @@ No resources found in workshopuser(n) namespace.
 - [Exercise 8](./lab-exercise8.md)
   - This exercise will will trace a Gateway Service using Trace Open Telemetry tracing.
 - [Exercise 9](./lab-exercise9.md)
-  - This exercise introduces External Secrets
+  - This exercise introduces External Secrets.
