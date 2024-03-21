@@ -8,10 +8,6 @@ spec:
     accept: true
     secretName: gateway-license
   app:
-    # annotations:
-    #   sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
-    #   instrumentation.opentelemetry.io/inject-java: "true"
-    #   instrumentation.opentelemetry.io/container-names: "gateway"
     replicas: 1
     image: docker.io/layer7api/gateway:11.0.00_COMBINED
     imagePullPolicy: IfNotPresent
@@ -27,22 +23,27 @@ spec:
       limits:
         memory: 4Gi
         cpu: 2
-    bundle: []
-    # bundle:
-    # - type: graphman
-    #   source: secret
-    #   name: graphman-otel-test-services
-    # - type: graphman
-    #   source: secret
-    #   name: graphman-otel-message-complete
+    bundle:
+      - type: restman
+        source: secret
+        name: restman-cluster-property-bundle
+      - type: graphman
+        source: secret
+        name: graphman-cluster-property-bundle
     bootstrap:
       script:
-        enabled: false
-    initContainers: []
+        enabled: true
+    singletonExtraction: false
+    repositoryReferences: []
+    initContainers:
+    - name: workshop-init
+      image: harbor.sutraone.com/mock/workshop-init:1.0.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+      - name: config-directory
+        mountPath: /opt/docker/custom
     management:
-      #secretName: gateway-secret
-      username: admin
-      password: 7layer
+      secretName: gateway-secret
       service:
         enabled: false
         type: ClusterIP
@@ -57,7 +58,6 @@ spec:
         enabled: true
         initContainerImage: docker.io/layer7api/graphman-static-init:1.0.1
       cluster:
-        #password: 7layer
         hostname: gateway.brcmlabs.com
       database:
         enabled: false # this runs the gateway in dbbacked/ephemeral mode
@@ -78,11 +78,6 @@ spec:
       - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
       - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true 
       - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
-      # - -Dotel.instrumentation.common.default-enabled=false
-      # - -Dotel.instrumentation.opentelemetry-api.enabled=true
-      # - -Dotel.instrumentation.runtime-metrics.enabled=true
-      # - -Dotel.instrumentation.jdbc.enabled=true
-      # - -Dotel.instrumentation.jdbc-datasource.enabled=true
     listenPorts:
       harden: false
       custom:
@@ -102,24 +97,6 @@ spec:
             com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
         - name: audit.setDetailLevel.FINE
           value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-        # - name: otel.serviceMetricEnabled
-        #   value: "true"
-        # - name: otel.metricPrefix
-        #   value: l7_
-        # - name: otel.resourceAttributes
-        #   value: k8s.container.name,k8s.pod.name
-        # - name: otel.traceEnabled
-        #   value: "true"
-        # - name: otel.traceConfig
-        #   value: |
-        #       {
-        #         "services": [
-        #           {"url": ".*/test.*"}
-        #         ],
-        #         "contextVariables": {
-        #           "assertions" : [".*"]
-        #         }
-        #       }
     system:
       properties: |-
         # Default Gateway system properties

@@ -1,135 +1,133 @@
 
-# Lab exercise 7
-In this exercise we will make of Gateway Telemetry Tracing and identify the reason for a service failure. We have already created a sample error service as part of exercise 6 (/test5). [See other exercises](./readme.md#lab-exercises).
+# Lab Exercise 7
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 6](./lab-exercise6.md), we will re-use the test services.
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Message-Completed Global Policy Fragment](#3-message-completed-global-policy-fragment)
+1. [Configure the Gateway](#4-configure-the-gateway)
+1. [Update the Gateway](#5-update-the-gateway)
+1. [Call Test Services](#6-call-test-services)
+1. [Monitor the Gateway](#7-monitor-the-gateway)
 
-## Key concepts
-- [Enable Tracing on Gateway](#enable-tracing-on-gateway)
-- [Update the Gateway](#update-the-gateway)
-- [Trace service on Jaeger](#trace-service-on-jaeger)
+## 1. Prerequisites
 
-### Enable Tracing on Gateway
-We would like to control the amount of tracing so that it does not affect the Gateway performance and backend (e.g. Jaeger, elasticsearch, etc) disk space.
-In gateway we can enable and disable the trace using the cluster-wide property, `otel.traceEnabled`. Also, we need to configure which service to trace. This can be configured using the `otel.traceConfig` cluster-wide property. This should in a json format. 
-1. Service(s) to trace can be specified by the resolution URL (regular expression) or service UID.
-2. Each assertion executed under a service trace is represented as a span. We can include/exclude the assertions to trace. Some assertions like 'SetVariable' may not be needed to be traced and can be excluded.
-3. Each span/assertion may optionally have an array of events/logs. They represent the context variables with values at the end of assertion execution.   Assertions which need to trace context variables need to be specified. By default none of the spans will have events with context variable values.
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 6](./lab-exercise6.md) before beginning this exercise.
 
-Lets enable the trace for our service using the URL regular expression and also trace all context variables. 
-Add below cluster-wide properties to Gateway custom resource at  _***spec.app.cwp.properties***_. 
+## 2. Overview
+In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 6, all the test services take a query parameter which denote the organization to which client (caller) belongs to. We will use that parameter to monitor the usage of APIs by organization.
 
-Continue using the Gateway CRD file from exercise5 [exercise5-resources/gateway.yaml](/exercise5-resources/gateway.yaml).
-</br> __**Uncomment lines from 111 to 122**__
+## 3. Message-Completed Global Policy Fragment
+We will use the Telemetry Metric assertion in the message-completed global policy fragment to create a custom `usage_by_org` metric with org, service_name, serviceOid and serviceUrl attributes.
 
-```yaml
-- name: otel.traceEnabled
-  value: "true"
-- name: otel.traceConfig
-  value: |
-      {
-        "services": [
-          {"url": ".*/test.*"}
-        ],
-        "contextVariables": {
-          "assertions" : [".*"]
-        }
-      }
-```
-
-### Update the Gateway
-Apply the changes made to Gateway custom resource. 
-
-1. Update the Gateway CR
+Create a secret containing the policy bundle:
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/gateway.yaml
+  kubectl create secret generic graphman-otel-message-complete --from-file=./exercise7-resources/otel_message_complete.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\gateway.yaml
+  kubectl create secret generic graphman-otel-message-complete --from-file=exercise7-resources\otel_message_complete.json
   ```
 </details>
 <br/>
 
-2. As there is only an cwp changes. The gateway pod will not restart and hence pod need to deleted manually. In production, cwp change can be applied using a repository/graphman or restman
-Get pod name
+The policy and assertion will appear as follows:
+
+<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
+
+## 4. Configure the Gateway
+Continue using the Gateway custom resource file from lab exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml)
+
+Add the new bundle by _**uncommenting lines 35 - 37**_:
+```yaml
+...
+    bundle:
+    - type: graphman
+      source: secret
+      name: graphman-otel-test-services
+    - type: graphman
+      source: secret
+      name: graphman-otel-message-complete
+    bootstrap:
+...
 ```
-kubectl get pods --no-headers -o custom-columns=":metadata.name" -l app.kubernetes.io/name=ssg
-```
-Copy output from above command and use it to delete the pod. The Gateway operator will recreate the pod.
-```
-kubectl delete pod <<pod_name>>
-```
-Wait until that the gateway is up
+
+## 5. Update the Gateway
+Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile the changes.
+
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise6-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise6-resources\gateway.yaml
+  ```
+</details>
+<br/>
+
+Check the status of the ssg pod:
 ```
 kubectl get pods
 ```
-### Invoke service.
-1. The service (age) calculates age. Takes two optional inputs as query parameters
-    1. dob -  02/08/1982 defaults to system date.
-    2. format - default MM/dd/yyyy
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/dc9343e8-b452-489e-bc83-7201a30a6d51" /></kbd>
-
-
-2. Once the gateway is up, call the test service using port-forward or external-ip address
+And wait until 2/2 containers in the ssg pod are READY. For example:
 ```
-kubectl get svc
-
-NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
-
-if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
-
-NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
+NAME                                                  READY   STATUS      RESTARTS       AGE
+api-requests-5bvx2                                    0/1     Completed   0              5m38s
+layer7-operator-controller-manager-7c996ccfb6-9qsw6   2/2     Running     1 (108m ago)   109m
+ssg-56ff97b54d-nsx86                                  2/2     Running     0              116s
 ```
 
-If EXTERNAL-IP is stuck in \<PENDING> state
-```
-kubectl port-forward svc/ssg 8443:8443
-```
-In another terminal make a curl call
-```
-curl https://34.89.84.69:8443/test5 -k
-```
-or if you used port-forward
-```
-curl https://localhost:8443/test5 -k
-```
-Output
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-    <soapenv:Body>
-        <soapenv:Fault>
-            <faultcode>soapenv:Server</faultcode>
-            <faultstring>Policy Falsified</faultstring>
-            <faultactor>https://localhost:8443/test5</faultactor>
-            <detail>
-                <l7:policyResult status="Error in Assertion Processing" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
-            </detail>
-        </soapenv:Fault>
-    </soapenv:Body>
-</soapenv:Envelope>
+## 6. Call Test Services
+We will reuse the job created in lab exercise 6 to generate some load and emit our new metric.
 
+First, delete the job that was created in lab exercise 6:
+```
+kubectl delete job api-requests
 ```
 
-### Trace service on Jaeger
-1. Open [Jaeger](https://jaeger.brcmlabs.com/)
-2. Select the your service under Service dropdown (workshopuser(n)-ssg)
-3. Select 'age' in 'Operation' drop down box. The service name is age and url is /test5
-4. Select appropriate 'Lookback' time and click on 'Find Traces'
-5. Should result in some traces for the service. Click on any one of them.
-6. Walk through the spans and check for errors. Here, there is a javascript assertion error
+Then, create the job again:
+<details>
+  <summary><b>Linux/MacOS</b></summary>
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/5ff8a008-68e3-427f-8270-b33f1fc8e34b" /></kbd>
+  ```
+  kubectl apply -f ./exercise6-resources/test-services.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
 
-### Start [Exercise 8](./lab-exercise8.md)
+  ```
+  kubectl apply -f exercise6-resources\test-services.yaml
+  ```
+</details>
+<br/>
+
+Watch the job run (making 1000 requests; with a 0 index):
+```
+kubectl logs -f job.batch/api-requests
+```
+
+## 7. Monitor the Gateway
+1. Login into [Kibana](https://kibana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
+1. Click the on **Analytics** tile on the Home page
+1. Click the **Dashboard** tile on the Analytics page
+1. Click the **Usage By Org** link on the Dashboards page
+1. Select and include your gateway (e.g. workshopuser99-ssg) from the **Gateway** dropdown field.
+1. You should be able to see API usage by organization for your gateway:
+
+![dashboard](./exercise7-resources/dashboard.png)
+
+
+# Start [Lab Exercise 8](./lab-exercise8.md)

@@ -1,116 +1,273 @@
 
-# Lab exercise 6
-In this exercise we will make use of the Gateway Telemetry Metric assertion to measure a custom metric. As noted in exercise 5, all the test services take a query parameter which denote the organization to which client (caller) belongs to. Now we would like to know the usage of APIs by organization. [See other exercises](./readme.md#lab-exercises).
+# Lab Exercise 6
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 5](./lab-exercise5.md), and is a pre-requisite.
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Create OpenTelemetry Collector Custom Resource](#3-create-opentelemetry-collector-custom-resource)
+1. [Create OpenTelemetry Instrumentation Custom Resource](#4-create-opentelemetry-instrumentation-custom-resource)
+1. [Deploy Test Services](#5-deploy-test-services)
+1. [Configure the Gateway](#6-configure-the-gateway)
+1. [Update the Gateway](#7-update-the-gateway)
+1. [Call Test Services](#8-call-test-services)
+1. [Monitor the Gateway](#9-monitor-the-gateway)
 
-## Key concepts
-- [Create message completed policy](#create-message-completed-policy)
-- [Configuring the Gateway](#configuring-the-gateway)
-- [Update the Gateway](#update-the-gateway)
-- [Call Test services](#call-test-services)
-- [Monitor Gateway](#monitor-gateway)
+## 1. Prerequisites
 
-### Create message completed policy
-Create a message-completed policy with Telemetry Metric assertion. Select the type to be counter and attributes service.name, service.oid and service.resolutionUri
-Get organization id from request parameter, if not present set it to 'NONE'
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 5](./lab-exercise5.md) before beginning this exercise.
 
-Create a configmap containing the policy.
-<details>
-  <summary><b>Linux/MacOS</b></summary>
+## 2. Overview
 
-  ```
-  kubectl create secret generic graphman-otel-message-complete --from-file=./exercise6-resources/otel_message_complete.json
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
+In this exercise you will observe your Gateway using OpenTelemetry.
 
-  ```
-  kubectl create secret generic graphman-otel-message-complete --from-file=exercise6-resources\otel_message_complete.json
-  ```
-</details>
-<br/>
+## 3. Create OpenTelemetry Collector Custom Resource
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
+The [OpenTelemetry Operator](https://opentelemetry.io/docs/kubernetes/operator/) has already been deployed to the lab exercise's shared Kubernetes cluster. Just like the Layer7 Operator manages Gateway and Repository custom resources. The OpenTelemetry Operator manages OpenTelemetry Collector custom resources. This section will create an OpenTelemetry customer resource, and the OpenTelemetry Operator will correspondingly deploy an OpenTelemetry Collector as a sidecar to the gateway pod. The OpenTelemetry Collector collects, filters and forwards metrics, traces and logs emitting by an OpenTelemetry Agent that will be injected into the gateway and the OpenTelemetry SDK that is used by the gateway.
 
-### Configuring the Gateway
-Continue using the Gateway CRD file from exercise 5 [exercise5-resources/gateway.yaml](./exercise5-resources/gateway.yaml)
+Open the OpenTelemetry Collector custom resource file here, [`./exercise6-resources/collector.yaml`](./exercise6-resources/collector.yaml).
 
-1. Add message complete secret bundle to _***spec.app.bundle***_
-</br> __* Uncomment lines 35 to 37 *__
+On line 4, replace `(n)` with your workshop namespace number (e.g. workshopuser99-eck):
 ```yaml
-bundle:
-  - type: graphman
-    source: secret
-    name: graphman-otel-test-services
-  - type: graphman
-    source: secret
-    name: graphman-otel-message-complete
+...
+metadata:
+  name: workshopuser99-eck
+spec:
+...
 ```
 
-### Update the Gateway
-Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile our new desired state with reality.
+On line 19, replace `(n)` with your workshop namespace number (e.g. workshopuser99-ssg):
+```yaml
+...
+    processors:
+      batch:
+      resource:
+        attributes:
+        - key: layer7gw.name
+          value: "workshopuser99-ssg"
+          action: upsert
+    exporters:
+...
+```
 
-1. Update the Gateway CR and verify that the gateway pod is restarted.
+Create the OpenTelemetry Collector custom resource:
+
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/gateway.yaml
+  kubectl apply -f ./exercise6-resources/collector.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\gateway.yaml
+  kubectl apply -f exercise6-resources\collector.yaml
   ```
 </details>
 <br/>
 
-```
-kubectl get pods
-```
-Verify the age of ssg pod
-```
-NAME                                                  READY   STATUS      RESTARTS       AGE
-api-requests-5bvx2                                    0/1     Completed   0              5m38s
-layer7-operator-controller-manager-7c996ccfb6-9qsw6   2/2     Running     1 (108m ago)   109m
-ssg-56ff97b54d-nsx86                                  2/2     Running     0              116s
-```
-### Call Test services.
-To generate some load, we will reuse the job from exercise6.
+## 4. Create OpenTelemetry Instrumentation Custom Resource
 
-1. Delete the job if already present (created as part of exercise6)
+The OpenTelemetry Operator also manages [OpenTelemetry Instrumentation](https://github.com/open-telemetry/opentelemetry-operator?tab=readme-ov-file#opentelemetry-auto-instrumentation-injection) custom resources, and uses them to automatically instrument workloads, like the gateway, by injecting OpenTelemetry Agents and related configuration.
+
+Open the OpenTelemetry Instrumentation custom resource file here, [`./exercise6-resources/instrumentation.yaml`](./exercise6-resources/instrumentation.yaml).
+
+On line 8, replace `(n)` with your workshop namespace number (e.g. workshopuser99-ssg):
+```yaml
+...
+spec:
+  env:
+    - name: OTEL_SERVICE_NAME
+      value: workshopuser99-ssg
+    - name: OTEL_METRICS_EXPORTER
+...
 ```
-kubectl delete job api-requests
-```
-2. Submit the job
+
+Create the OpenTelemetry Instrumentation custom resource:
+
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  kubectl apply -f ./exercise5-resources/test-services.yaml
+  kubectl apply -f ./exercise6-resources/instrumentation.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  kubectl apply -f exercise5-resources\test-services.yaml
+  kubectl apply -f exercise6-resources\instrumentation.yaml
   ```
 </details>
 <br/>
 
-### Monitor Gateway
-1. Login into [Kibana](https://kibana.brcmlabs.com/) and click on 'Analytics' and then click on 'Dashboard'
-2. Search for 'Usage By Org' and click on the link.
-3. Select your Gateway from the 'Gateway' dropdown (workshopuser(n)-ssg)
-4. You should be able to see chart with api usage by organization as below.
+## 5. Deploy Test Services
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/3084109f-fbb0-4471-986c-f8b71d65b819" /></kbd>
+We will create a Kubernetes secret with a Graphman bundle that will bootstrap the following test services. These will be used to generate metrics and demonstrate other concepts during this workshop.
+
+**Test Services**
+
+- **/test1** - Always succeeds. Calls another service /echotest and returns result from it.
+- **/test2** - Always generates a policy failure.
+- **/test3** - Always generates a routing failure.
+- **/test4** - Always succeeds. No routing.    
+- **/test5** - Takes two query parameters as input and calculates age (years elapsed). It has an error that needs to be diagnosed and fixed.
+  - **dob** - Date of Birth - Default format dd/MM/yyyy
+  - **format** (optional) - Specify the format of dob
+- **/echotest** - Returns system date and time.
+
+Create the Graphman bundle secret:
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl create secret generic graphman-otel-test-services  --from-file=./exercise6-resources/otel_test_services.json
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl create secret generic graphman-otel-test-services  --from-file=exercise6-resources\otel_test_services.json
+  ```
+</details>
+<br/>
+
+## 6. Configure the Gateway
+
+We can now configure our Gateway custom resource for OpenTelemetry and the Graphman bundle secret.
+
+Open the Gateway custom resource file here, [`./exercise6-resources/gateway.yaml`](./exercise6-resources/gateway.yaml).
+
+First, add OpenTelemetry related cluster wide properties by _**uncommenting lines 105 - 110**_ (the other related cluster wide properties will be used in a later lab exercise).
+
+```yaml
+...
+        - name: audit.setDetailLevel.FINE
+          value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
+        - name: otel.serviceMetricEnabled
+          value: "true"
+        - name: otel.metricPrefix
+          value: l7_
+        - name: otel.resourceAttributes
+          value: k8s.container.name,k8s.pod.name
+        # - name: otel.traceEnabled
+        #   value: "true"
+...
+```
+
+Next, disable auto instrumentation of all libraries except JDBC and JVM runtime-metrics by _**uncommenting lines 105 - 110**_ (go [here](https://opentelemetry.io/docs/languages/java/automatic/configuration/#suppressing-specific-agent-instrumentation) for a list of libraries that the agent can auto-instrument).
+
+```yaml
+...
+      - -Dotel.instrumentation.common.default-enabled=false
+      - -Dotel.instrumentation.opentelemetry-api.enabled=true
+      - -Dotel.instrumentation.runtime-metrics.enabled=true
+      - -Dotel.instrumentation.jdbc.enabled=true
+      - -Dotel.instrumentation.jdbc-datasource.enabled=true
+    listenPorts:
+...
+```
+
+Then, add the Graphman bundle by _**commenting out line 30 and uncommenting lines 31 - 34**_.
+
+```yaml
+...
+        cpu: 2
+    # bundle: []
+    bundle:
+    - type: graphman
+      source: secret
+      name: graphman-otel-test-services
+    # - type: graphman
+...
+```
+
+Finally, add OpenTelemetry annotations by _**uncommenting lines 11 - 14**_. At the same time, _**replace `(n)` with your workshop namespace number on line 12 (e.g. workshopuser99-eck)**_.
+
+```yaml
+...
+  app:
+    annotations:
+      sidecar.opentelemetry.io/inject: "workshopuser99-eck"
+      instrumentation.opentelemetry.io/inject-java: "true"
+      instrumentation.opentelemetry.io/container-names: "gateway"
+    replicas: 1
+...
+```
+
+## 7. Update the Gateway
+
+Now that we've configured our Gateway custom resource to make Gateway more observable using OpenTelemetry, we can apply the updated manifest to Kuberenetes.
+
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise6-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise6-resources\gateway.yaml
+  ```
+</details>
+<br/>
+
+## 8. Call Test Services
+
+We'll now create a configmap containing a script that will call our test services in a Kubernetes Job.
+
+Create the configmap:
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise6-resources/api-request-configmap.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise6-resources\api-request-configmap.yaml
+  ```
+</details>
+<br/>
+
+Create the job:
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl apply -f ./exercise6-resources/test-services.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl apply -f exercise6-resources\test-services.yaml
+  ```
+</details>
+<br/>
+
+Watch the job run (making 1000 requests; with a 0 index):
+```
+kubectl logs -f job.batch/api-requests
+```
+
+## 9. Monitor the Gateway
+1. Login into [Kibana](https://kibana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
+1. Click the on **Analytics** tile on the Home page
+1. Click the **Dashboard** tile on the Analytics page
+1. Click the **Layer7 Gateway Dashboard** link on the Dashboards page
+1. Select and include your gateway (e.g. workshopuser99-ssg) from the **Gateway** dropdown field.
+1. You should be able to see service and runtime metrics for your gateway:
+
+![dashboard](./exercise6-resources/dashboard.png)
 
 
-### Start [Exercise 7](./lab-exercise7.md)
+# Start [Lab Exercise 7](./lab-exercise7.md)

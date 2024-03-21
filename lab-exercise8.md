@@ -1,233 +1,142 @@
-# Lab exercise 8
-This exercise introduces how to use external kubernetes secrets as Gateway Stored Passwords. [See other exercises](./readme.md#lab-exercises).
 
-### This exercise requires pre-requisites
-Please perform the steps [here](./readme.md#before-you-start) to configure your environment if you haven't done so yet. This exercise follows on from [exercise 7](./lab-exercise7.md), make sure you've cloned this repository and added a Gateway v11.x license to the correct folder
+# Lab Exercise 8
 
-## Key concepts
-- [Create Kubernetes Secret](#create-kubernetes-secret)
-- [Configure the Gateway](#configure-the-gateway)
-- [Update the Gateway](#update-the-gateway)
-- [Inspect the Gateway](#inspect-the-gateway)
-- [Test your Gateway Deployment](#test-your-gateway-deployment)
-e
-### Important
-- Tail the Layer7 Operator logs in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal)
+1. [Prerequisites](#1-prerequisites)
+1. [Overview](#2-overview)
+1. [Enable Tracing on the Gateway](#3-enable-tracing-on-the-gateway)
+1. [Update the Gateway](#4-update-the-gateway)
+1. [Call Test Service](#5-call-test-service)
+1. [View Trace in Jaeger](#6-view-trace-in-jaeger)
+
+## 1. Prerequisites
+
+Please make sure you've completed the steps [here](./readme.md) and have completed [Lab Exercise 7](./lab-exercise7.md) before beginning this exercise.
+
+## 2. Overview
+
+In this exercise we will use OpenTelemetry tracing to help diagnose a service failure.
+
+## 3. Enable Tracing on the Gateway
+
+To be practically useful, we need to be able to selectively enable and filter tracing to have a controlled impact on gateway and OpenTelemetry backend processing and storage resource utilization.
+
+The `otel.traceEnabled` cluster-wide property can be used to enable and disable tracing.
+
+The `otel.traceConfig` cluster-wide property can be used to control which services, assertions and context variables will be traced. It can also filter tracing to requests sent from a specific client IP address.
+
+Continue using the Gateway custom resource file from lab exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml).
+
+Enable tracing by _**uncommenting lines 111 - 112**_:
+```yaml
+...
+        - name: otel.traceEnabled
+          value: "true"
+        - name: otel.traceConfig
+          value: |
+              {
+                "services": [
+                  {"url": ".*/test.*"}
+                ],
+                "contextVariables": {
+                  "assertions" : [".*"]
+                }
+              }
+    system:
+...
 ```
-kubectl logs -f -l control-plane=controller-manager -c manager
-```
 
-### Create Kubernetes Secret
-Kubernetes Secrets are stored as base64 encoded strings without any encryption, Graphman accepts encrypted values and decrypts them with either the clusterPassphrase or a user supplied passphrase.
+## 4. Update the Gateway
+Apply the changes made to Gateway custom resource. 
 
-1. Encrypt a value (there may be a warning about the key deriviation which we will ignore for now.)
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  echo -n "myothersupersecretvalue" | openssl enc -aes-256-cbc -md sha256 -pass pass:7layer -a
-  ```
-  Output:
-  ```
-  U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+  kubectl apply -f ./exercise6-resources/gateway.yaml
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  echo|set /p="myothersupersecretvalue"|"C:\Program Files\Git\usr\bin\openssl" enc -aes-256-cbc -md sha256 -pass pass:7layer -a
-  ```
-  Output:
-  ```
-  U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
+  kubectl apply -f exercise6-resources\gateway.yaml
   ```
 </details>
 <br/>
 
-2. Create a simple secret
-Note that mysupersecret2 is the encrypted value that we derived in the previous step. This provides encryption for this value at rest in Kubernetes.
-```
-kubectl create secret generic mysupersecrets --from-literal=mysupersecret1=mysupersecretvalue --from-literal=mysupersecret2=U2FsdGVkX19+coRzCf5pI1wvM03aDsehAyZBhXQFvZKE+70ZOuzSfZU/xvUSiz+N
-```
-3. Create the exercise 8 resources
-This step will create a graphman bundle that exposes a very simple endpoint that returns Gateway Stored Passwords in plaintext and enable access to the GCP Secret Manager via the external secrets operator.
-<details>
-  <summary><b>Linux/MacOS</b></summary>
+When only making cluster-wide property changes in this way, the gateway pod will not restart to pick up the changes. For now, we can delete the gateway pod, and Kuberenetes will recreate it with the new cluster-wide properties. As you've already seen in previous lab exercises, using the Layer7 Operator with Repository custom resources may be a better way to promote changes like these.
 
-  ```
-  kubectl apply -k ./exercise8-resources
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
-
-  ```
-  kubectl apply -k exercise8-resources
-  ```
-</details>
-<br/>
-
-In a few seconds there will be a secret called database-credentials-gcp created in your namespace. The [external secrets operator](https://external-secrets.io/latest/) creates a local copy of the external secret so that we can use it in Kubernetes. The external secrets operator has integrations for a variety of secret management [providers](https://external-secrets.io/latest/provider/aws-secrets-manager/).
 ```
-kubectl get secret database-credentials-gcp -oyaml
+kubectl delete pod -l app.kubernetes.io/name=ssg
 ```
 
-### Configure the Gateway
-Update [exercise8-resources/gateway.yaml](./exercise8-resources/gateway.yaml).
-
-We need to add two things to this file
-
-- The new bundle we created
-```
-bundle:
-  ...
-  - type: graphman
-    source: secret
-    name: graphman-secret-reader-bundle
-```
-- External secret references
-```
-externalSecrets:
-  - name: database-credentials-gcp
-    enabled: true
-    description: GCP Database credentials
-    variableReferencable: true
-  - name: mysupersecrets
-    enabled: true
-    description: top secret
-    variableReferencable: true
-    encryption:
-      passphrase: 7layer
-      existingSecret: ""
-  - name: private-key-secret
-    enabled: true
-    description: a private key
-    variableReferencable: false
-```
-
-### Update the Gateway
-<details>
-  <summary><b>Linux/MacOS</b></summary>
-
-  ```
-  kubectl apply -f ./exercise8-resources/gateway.yaml
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
-
-  ```
-  kubectl apply -f exercise8-resources\gateway.yaml
-  ```
-</details>
-<br/>
-
-### Inspect the Gateway
-- Get pods
+Check the status of the ssg pods:
 ```
 kubectl get pods
 ```
-output (wait for the ssg pod to hit READY 1/1 before proceeding to the next step)
+
+And wait until there is just one ssg pod with 2/2 containers READY. For example:
 ```
-NAME                                                 READY   STATUS    RESTARTS   AGE
-layer7-operator-controller-manager-6cb57584d-n9dlz   2/2     Running   0          4d1h
-ssg-6c56b6944b-hr497                                 1/1     Running   0          3h48m
-```
-- Get ssg pod
-```
-kubectl get pod <pod-name> -oyaml
-```
-output (annotations)
-```
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    security.brcmlabs.com/external-secret-database-credentials-gcp: 0935885ac45ab667fa9a8c30e040e867eebafd6c
-    security.brcmlabs.com/external-secret-mysupersecrets: 2a9fa4811aa7037693b05795c202237862b10579
-    security.brcmlabs.com/external-secret-private-key-secret: a52bffc4382b47978308e72467b01e29b94f7c33
-    security.brcmlabs.com/l7-gw-myapis-dynamic: 8fc74669689abe781645dac214ebf26eb7480c78
-    security.brcmlabs.com/l7-gw-mysubscriptions-dynamic: 9daef7d1286dd13b609ada39ff1d6aa624ff64da
-  creationTimestamp: "2023-09-25T12:59:01Z"
-  generateName: ssg-6c56b6944b-
-  labels:
-    app.kubernetes.io/created-by: layer7-operator
-    app.kubernetes.io/managed-by: layer7-operator
-    app.kubernetes.io/name: ssg
-    app.kubernetes.io/part-of: ssg
-    management-access: leader
-    pod-template-hash: 6c56b6944b
+NAME                                                  READY   STATUS      RESTARTS       AGE
+api-requests-5bvx2                                    0/1     Completed   0              5m38s
+layer7-operator-controller-manager-7c996ccfb6-9qsw6   2/2     Running     1 (108m ago)   109m
+ssg-56ff97b54d-nsx86                                  2/2     Running     0              116s
 ```
 
-- Trigger an update
-```
-kubectl edit pod <pod-name>
-```
-Update one of the checksums
+## 5. Call Test Service
 
-### Test your Gateway Deployment
-```
-kubectl get svc
+We will call this test service to generate a trace:
 
-NAME  TYPE           CLUSTER-IP     EXTERNAL-IP         PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.161    ***34.89.84.69***   8443:31747/TCP,9443:30778/TCP   41m
+- **/test5** - Takes two query parameters as input and calculates age (years elapsed). It has an error that needs to be diagnosed and fixed.
+  - **dob** - Date of Birth - Default format dd/MM/yyyy
+  - **format** (optional) - Specify the format of dob
 
-if your output looks like this that means you don't have an External IP Provisioner in your Kubernetes Cluster. You can still access your Gateway using port-forward.
+<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/dc9343e8-b452-489e-bc83-7201a30a6d51" /></kbd>
 
-NAME  TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                         AGE
-ssg   LoadBalancer   10.68.4.126   <PENDING>       8443:31384/TCP,9443:31359/TCP   7m39s
-```
-
-If EXTERNAL-IP is stuck in \<PENDING> state
-```
-kubectl port-forward svc/ssg 9443:9443
-```
+First, find the external IP address for the gateway service in your namespace:
 
 ```
-curl https://34.89.84.69:8443/secrets -k
-
-or if you used port-forward
-
-curl https://localhost:9443/secrets -k
-
-```
-Response
-```
-{
-  "gcp-credentials": {
-     "database_username": "gateway",
-     "database_password": "7A6j7EyTVPKplTPh"
-   },
-  "local-credentials": {
-    "mysupersecret1": "mysupersecretvalue",
-    "mysupersecret2" "myothersupersecretvalue"
-  }
-}
+kubectl get svc ssg
 ```
 
-##### Sign into Policy Manager
-Policy Manager access is less relevant in a deployment like this because we haven't specified an external MySQL database, any changes that we make will only apply to the Gateway that we're connected to and won't survive a restart. It is still useful to check what's been applied. In our configuration we could set the following which would override the default application port configuration.
-```
-...
-listenPorts:
-  harden: true
-...
-```
-This configuration removes port 2124, disables 8080 (HTTP) and hardens 8443 and 9443 where 9443 is the only port that allows a Policy Manager connection. The [advanced example](../gateway/advanced-gateway.yaml) shows how this can be customised with your own ports.
+Here is an example of the previous command's output. In this example, the external IP address is **34.168.26.20**. Yours will be different.
 
 ```
-username: admin
-password: 7layer
-gateway: 35.189.116.20:9443
-```
-or if you used port-forward
-```
-username: admin
-password: 7layer
-gateway: localhost:9443
+NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)                         AGE
+ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
 
+Next, try call the test service on the gateway using your external IP address. For example:
 
+```
+curl -k https://<your-external-ip>:8443/test5
+```
 
+The API should respond like so:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    <soapenv:Body>
+        <soapenv:Fault>
+            <faultcode>soapenv:Server</faultcode>
+            <faultstring>Policy Falsified</faultstring>
+            <faultactor>https://localhost:8443/test5</faultactor>
+            <detail>
+                <l7:policyResult status="Error in Assertion Processing" xmlns:l7="http://www.layer7tech.com/ws/policy/fault"/>
+            </detail>
+        </soapenv:Fault>
+    </soapenv:Body>
+</soapenv:Envelope>
+```
 
+## 6. View Trace in Jaeger
+1. Open [Jaeger](https://jaeger.brcmlabs.com/).
+1. Select the your service under Service dropdown (workshopuser(n)-ssg)
+1. Search for and select `age` in the **Operation** dropdown field (the service name is "age" and the service URL is "/test5").
+1. Click on **Find Traces**
+1. Click on one of the traces in the search result set.
+1. Explore the trace spans and check for errors. In particular, you should find a Javascript error like follows:
+
+![trace](./exercise8-resources/trace.png)
+
+# Start [Lab Exercise 9](./lab-exercise9.md)
