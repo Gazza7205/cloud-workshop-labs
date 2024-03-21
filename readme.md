@@ -13,7 +13,8 @@
 ## 1. Overview
 This repository contains step-by-step instructions for the Cloud Workshop Labs.
 
-[Setup Recording](./resources/setup-video.mp4)
+![Setup Recording](https://github.com/Gazza7205/cloud-workshop-labs/assets/14822430/b62c54ea-ac32-4b63-aaa5-eaa32566c552)
+
 
 ## 2. Prerequisites
 - Shared Kubernetes cluster prepared specifically for this workshop
