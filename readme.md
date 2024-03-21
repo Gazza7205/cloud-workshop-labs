@@ -13,7 +13,7 @@
 ## 1. Overview
 This repository contains step-by-step instructions for the Cloud Workshop Labs.
 
-![Setup Recording](https://github.com/Gazza7205/cloud-workshop-labs/assets/14822430/b62c54ea-ac32-4b63-aaa5-eaa32566c552){:target="_blank"}
+![Setup Recording](https://github.com/Gazza7205/cloud-workshop-labs/assets/14822430/b62c54ea-ac32-4b63-aaa5-eaa32566c552)
 
 
 ## 2. Prerequisites
