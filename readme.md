@@ -1,4 +1,4 @@
-# Cloud Workshop Labs
+# Layer7 Cloud Workshop
 
 > _**Important: Use a browser to view this lab content during the workshop. Do not try to use the raw markdown content directly during the workshop.**_
 
@@ -11,7 +11,7 @@
 1. [Lab Exercises](#7-lab-exercises)
 
 ## 1. Overview
-This repository provides step by step instructions and supporting artifacts for a number of Cloud Workshop lab exercises. The lab exercises introduce participants to Graphman, the Layer7 Operator, Open Telemetry and external secret management using the Layer7 Operator.
+This repository provides step by step instructions and supporting artifacts for a number of Layer7 Cloud Workshop lab exercises. The lab exercises introduce participants to Graphman, the Layer7 Operator, Open Telemetry and external secret management using the Layer7 Operator.
 
 ![Setup Recording](https://github.com/Gazza7205/cloud-workshop-labs/assets/14822430/b62c54ea-ac32-4b63-aaa5-eaa32566c552)
 
