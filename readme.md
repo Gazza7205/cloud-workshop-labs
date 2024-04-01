@@ -5,10 +5,11 @@
 1. [Overview](#1-overview)
 1. [Prerequisites](#2-prerequisites)
 1. [Share GitHub ID](#3-share-github-id)
-1. [Prepare Folder](#4-prepare-folder)
-1. [Download Temporary License](#5-download-temporary-license)
-1. [Connect to Kubernetes](#6-connect-to-kubernetes)
-1. [Lab Exercises](#7-lab-exercises)
+1. [Download Temporary License](#4-download-temporary-license)
+1. [Download Kubeconfig](#5-download-kubeconfig)
+1. [Prepare Folder](#6-prepare-folder)
+1. [Connect to Kubernetes](#7-connect-to-kubernetes)
+1. [Lab Exercises](#8-lab-exercises)
 
 ## 1. Overview
 This repository provides step by step instructions and supporting artifacts for a number of Layer7 Cloud Workshop lab exercises. The lab exercises introduce participants to Graphman, the Layer7 Operator, Open Telemetry and external secret management using the Layer7 Operator.
@@ -17,6 +18,8 @@ This repository provides step by step instructions and supporting artifacts for 
 
 
 ## 2. Prerequisites
+These prerequisites are required for completing the lab exercises in the Layer7 Cloud Workshop. They should be downloaded, installed and/or otherwise accessible during the workshop.
+
 - Shared Kubernetes cluster prepared specifically for this workshop
 - Experience operating in a Linux/Mac/Windows terminal
 - This repository
@@ -31,17 +34,18 @@ This repository provides step by step instructions and supporting artifacts for 
 ## 3. Share GitHub ID
 A private GitHub repository is used for sharing a temporary license and environment related information required by this workshop. You must share your GitHub ID with the workshop coordinator to be given access to the private repository.
 
-## 4. Prepare Folder
-Much of the work in these labs will be done at the command line in a terminal. It will be easier if you prepare a folder (e.g. `workshop`) inside of which you will copy many of the prerequisites and do much of the work. After the of the following steps, your folder should look something like this:
+## 4. Download Temporary License
+A temporary license has been provided for this workshop. Download the [license](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/license.xml) from the private repository.
+
+## 5. Download Kubeconfig
+For this workshop, you will be assigned a user number and a corresponding namespace in a shared Kubernetes cluster. Download the [kubeconfig file for your user number](https://github.com/CAAPIM/cloud-workshop-labs-environment/tree/main/cloud-workshop/attendees) (e.g. `workshopuser(n).kubeconfig`) from the private repository.
+
+## 6. Prepare Folder
+Much of the work in these labs will be done at the command line in a terminal. It will be easier if you prepare a folder (e.g. `workshop`) inside of which you will copy many of the prerequisites and do much of the work. When done, your folder should look something like this:
 
 ![workshop-folder](resources/workshop-folder.png)
 
-## 5. Download Temporary License
-A temporary license has been provided for this workshop. Download the [license](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/license.xml) from the private repository.
-
-## 6. Connect to Kubernetes
-For this workshop, you will be assigned a user number and a corresponding namespace in a shared Kubernetes cluster. Download the [kubeconfig file for your user number](https://github.com/CAAPIM/cloud-workshop-labs-environment/tree/main/cloud-workshop/attendees) (e.g. `workshopuser(n).kubeconfig`) from the private repository.
-
+## 7. Connect to Kubernetes
 Update and execute the following command with the path to your kubeconfig file, and test your connection to the Kubernetes cluster:
 
 <details>
@@ -101,7 +105,7 @@ Expected response at the beginning of the workshop:
 No resources found in workshopuser(n) namespace.
 ```
 
-## 7. Lab Exercises
+## 8. Lab Exercises
 - [Exercise 1](./lab-exercise1.md)
   - This exercise explores configuration as code concepts using Graphman.
 - [Exercise 2](./lab-exercise2.md)
@@ -120,3 +124,5 @@ No resources found in workshopuser(n) namespace.
   - This exercise will will trace a Gateway Service using Trace Open Telemetry tracing.
 - [Exercise 9](./lab-exercise9.md)
   - This exercise introduces External Secrets.
+
+# Start [Lab Exercise 1](./lab-exercise1.md)
