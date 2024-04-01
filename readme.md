@@ -11,7 +11,7 @@
 1. [Lab Exercises](#7-lab-exercises)
 
 ## 1. Overview
-This repository contains step-by-step instructions for the Cloud Workshop Labs.
+This repository provides step by step instructions and supporting artifacts for a number of Cloud Workshop lab exercises. The lab exercises introduce participants to Graphman, the Layer7 Operator, Open Telemetry and external secret management using the Layer7 Operator.
 
 ![Setup Recording](https://github.com/Gazza7205/cloud-workshop-labs/assets/14822430/b62c54ea-ac32-4b63-aaa5-eaa32566c552)
 
