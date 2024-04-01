@@ -315,7 +315,7 @@ You can also apply it dynamically to a gateway with the import command without r
 
 ## 9. View the Result
 
-To validate that you sucesfully applied configuration change from dev to prod, you can call the APIs in each of those respective environments again and they should no longer produce divergent outputs.
+To validate that you successfully applied the configuration change from dev to prod, you can call the APIs in each of those respective environments again and they should no longer produce divergent outputs.
 
 
 Call API in dev:
