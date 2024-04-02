@@ -141,7 +141,7 @@ For example only (these commands will fail because the secret already exists):
 <br/>
 
 ## 5. Restman Bundle
-Though the Layer7 Operator is designed to primarily work with Graphman, Restman bundles can also be boostrapped to container gateways managed by the Layer7 Operator using secrets or other mechanisms.
+Though the Layer7 Operator is designed to primarily work with Graphman, Restman bundles can also be bootstrapped to container gateways managed by the Layer7 Operator using secrets or other mechanisms.
 
 There is a basic Restman bundle that contains a single cluster-wide property here, [./exercise3-resources/cluster-property.bundle](./exercise3-resources/cluster-property.bundle). Following the same process as before, we will create a secret that contains this bundle.
 
