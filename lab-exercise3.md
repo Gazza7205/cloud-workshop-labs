@@ -229,7 +229,7 @@ secret/restman-cluster-property-bundle configured
 ## 7. InitContainers
 InitContainers are special containers that run before application containers in a pod. InitContainers can contain utilities or setup scripts not present in the application image. They can also share file system volumes with the application container making them useful for copying custom configuration as we will see now.
 
-There is a basic initContainer here, [./exercise2-resources/basic-initcontainer](./exercise2-resources/basic-initcontainer/). If you're familiar with the Gateway Helm Chart, you'll recognize the file/folder structure. There are additional examples [here](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) if you want to learn more about using initContainers with Layer7 API Gateways.
+There is a basic initContainer here, [./exercise3-resources/basic-initcontainer](./exercise3-resources/basic-initcontainer/). If you're familiar with the Gateway Helm Chart, you'll recognize the file/folder structure. There are additional examples [here](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) if you want to learn more about using initContainers with Layer7 API Gateways.
 
 The basic initContainer that we provide works with a shared volume (/opt/docker/custom) and a bootstrap script that moves files from this folder to the correct locations on the gateway container during startup.
 
