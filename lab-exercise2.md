@@ -18,12 +18,15 @@ Please make sure you've completed the steps [here](./readme.md) before beginning
 
 ## 2. Overview
 
-This exercise should familiarize you with the basic concepts of the Layer7 Operator and what operators do in general. [See other exercises](./readme.md#lab-exercises)
+Kubernetes operators automate tasks traditionally performed by a human operator of an application. Kubernetes operators should have the same level of deployment, behavior and troubleshooting expertise as a human operator when automating those tasks.
 
-### Key concepts
-- Deploying the Layer7 Operator
-- Creating, updating, inspecting and removing a custom resource (Gateway)
-- Making sense of the Layer7 Operator logs
+Kubernetes [operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are Kubernetes extensions created using the [Operator SDK](https://github.com/operator-framework/operator-sdk). They make use of custom resources to manage applications and their components adhering to the Kubernetes principle of control loops. A control loop constantly observes the desired state of resources, analyzes the actual state of those resources, and executes actions to synchronize the current state with the desired state as necessary.
+
+The [Layer7 Operator](https://github.com/CAAPIM/layer7-operator/wiki/Getting-Started) has expert knowledge of Layer7 products, and in the preview release, it makes use of [gateway](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource) and [repository](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource) custom resources to automate the deployment, configuration and management of Layer7 API Gateways using static or dynamic config-as-code in the form of Graphman bundles from different sources of truth including git repositories or artifact repositories (or optionally backed by a MySQL database).
+
+In this exercise, we will deploy the Layer7 Operator. We will then deploy a gateway customer resource to deploy and scale a gateway using the Layer7 Operator.
+
+![Lab Exercise 2 Recording]()
 
 ## 3. Change Directory
 
