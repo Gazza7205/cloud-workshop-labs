@@ -406,7 +406,7 @@ Finally, references the bundles that we created by replacing the bundle array (~
 ```
 
 ## 9. Update The Gateway
-We can now apply the Gateway custom cesource manifest in Kubernetes. The Layer7 Operator will then reconcile actual state with our new desired state.
+We can now apply the Gateway custom resource updates. The Layer7 Operator will then reconcile actual state with our new desired state.
 
 First, if you're not still tailing the Layer7 Operator logs from the previous lab exercise, then start doing that now in a separate terminal (you may have to set your KUBECONFIG environment variable in the new terminal):
 
