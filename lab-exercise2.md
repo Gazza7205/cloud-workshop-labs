@@ -24,7 +24,7 @@ Kubernetes [operators](https://kubernetes.io/docs/concepts/extend-kubernetes/ope
 
 The [Layer7 Operator](https://github.com/CAAPIM/layer7-operator/wiki/Getting-Started) has expert knowledge of Layer7 products, and in the preview release, it makes use of [gateway](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource) and [repository](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource) custom resources to automate the deployment, configuration and management of Layer7 API Gateways using static or dynamic config-as-code in the form of Graphman bundles from different sources of truth including git repositories or artifact repositories (or optionally backed by a MySQL database).
 
-In this exercise, we will deploy the Layer7 Operator. We will then deploy a gateway customer resource to deploy and scale a gateway using the Layer7 Operator.
+In this exercise, we will deploy the Layer7 Operator. We will then deploy a gateway custom resource to deploy and scale a gateway using the Layer7 Operator.
 
 ![Lab Exercise 2 Recording]()
 
