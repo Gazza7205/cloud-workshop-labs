@@ -18,7 +18,9 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-This exercise should familiarize you with some of the additional features of the Layer7 Operator and introduce some of the standard Kubernetes concepts and features used throughout this workshop. [See other exercises](./readme.md#lab-exercises).
+The Layer7 Operator supports the same deployment options for the Layer7 API Gateway as its Helm chart does, including support for bootstrapping bundles and initContainers. These options offer the Layer7 Operator multiple ways of managing gateways short of using configuration as code in the form of Graphman bundles pulled from git or artifact repository sources of truth, concepts that will be explored in later exercises.
+
+This exercise should familiarize you with some of those options, including bootstrapping bundles and using initContainers, and other related Kubernetes concepts and tools.
 
 ## 3. Gateway Management
 
