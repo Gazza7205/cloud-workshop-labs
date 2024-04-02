@@ -22,6 +22,8 @@ The Layer7 Operator supports the same deployment options for the Layer7 API Gate
 
 This exercise should familiarize you with some of those options, including bootstrapping bundles and using initContainers, and other related Kubernetes concepts and tools.
 
+![Lab Exercise 3 Recording]()
+
 ## 3. Gateway Management
 
 In this section, we will create and inspect a Kubernetes secret used to manage gateway admin credentials.
