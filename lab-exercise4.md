@@ -18,7 +18,7 @@ This exercise introduces the [Repository custom resource](https://github.com/CAA
 ![Lab Exercise 4 Recording]()
 
 ## 3. Repository Custom Resources
-There are several ways that Repository customer resources can be configured. This section shows two examples pointing to either a branch or tag in a Git repository.
+There are several ways that Repository custom resources can be configured. This section shows two examples pointing to either a branch or tag in a Git repository.
 
 **Branch:**
 
