@@ -13,7 +13,7 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-This exercise introduces the [Repository custom resource](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource). Repository custom resources define Git repositories (containing Graphman bundles exploded to a folder hierarchy of files) or artifact repositories (containing JSON or compressed Graphman bundle files downloadable via HTTP) that act as sources of truth for Gateway configuration as code. Repository custom resources are managed by the Layer7 Operator, and referenced by Gateway custom resources for static or dynamic configuration as code. The Layer7 Operator monitors the repositories for changes, creates local copies of the changes, and applies the changes to gateways that reference the repositories.
+This exercise introduces the [Repository custom resource](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource). Repository custom resources define Git repositories (containing Graphman bundles exploded to a folder hierarchy of files) or artifact repositories (containing JSON or compressed Graphman bundle files downloadable via HTTP) that act as sources of truth for Gateway configuration as code. Repository custom resources are managed by the Layer7 Operator, and referenced by [Gateway custom resources](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource#repository-references) for static or dynamic configuration as code. The Layer7 Operator monitors the repositories for changes, creates local copies of the changes, and applies the changes to gateways that reference the repositories.
 
 ![Lab Exercise 4 Recording]()
 
