@@ -13,9 +13,7 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-This exercise introduces the Repository custom resource. Repository custom resource reconcile external Git respositories (containing exploded Graphman bundles) or artifact repositories (containing JSON or compressed Graphman bundle files downloadable via HTTP) with the Layer7 Operator. The Repository Controller is responsible for ensuring that the latest commit is always available to be applied to Gateways. In the following sections we will dive deeper into how that happens.
-
-Additional documentation for Repository custom resources can be found [here](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource).
+This exercise introduces the [Repository custom resource](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource). Repository custom resources define Git repositories (containing Graphman bundles exploded to a folder hierarchy of files) or artifact repositories (containing JSON or compressed Graphman bundle files downloadable via HTTP) that act as sources of truth for Gateway configuration as code. Repository custom resources are managed by the Layer7 Operator, and referenced by Gateway custom resources for static or dynamic configuration as code. The Layer7 Operator monitors the repositories for changes, creates local copies of the changes, and applies the changes to gateways that reference the repositories.
 
 ## 3. Repository Custom Resources
 There are several ways that Repository customer resources can be configured. This section shows two examples pointing to either a branch or tag in a Git repository.
