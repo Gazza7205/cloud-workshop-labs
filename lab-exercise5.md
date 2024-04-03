@@ -137,7 +137,7 @@ Create the `graphman-encryption-secret` secret:
 
 Singletons are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. These don't require special support when deploying gateways backed by a shared MySQL database. However, they do need special support when deploying ephemeral gateways that don't share a database.
 
-Notice the singletonExtraction property on line 36 in [`./exercise4-resources/gateway.yaml`](./exercise4-resources/gateway.yaml). Singleton extraction supports using singletons for ephemeral gateways by designating one gateway pod as a leader and only applying scheduled tasks and JMS listeners to that pod. This is currently only supported by dynamic repository references. 
+Notice the singletonExtraction property on line 36 in [`./exercise5-resources/gateway.yaml`](./exercise5-resources/gateway.yaml). Singleton extraction supports using singletons for ephemeral gateways by designating one gateway pod as a leader and only applying scheduled tasks and JMS listeners to that pod. This is currently only supported by dynamic repository references. 
 
 ## 6. Update the Gateway Custom Resource
 
