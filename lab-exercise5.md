@@ -298,7 +298,7 @@ metadata:
 ...
 ```
 
-The Layer7 Operator uses the dynamic repository checksums to keep gateway configuration in sync with repository configuration. We can trigger a dynamic gateway update by modifying one of the dynamic repository checksums. Edit the gateway pod and make a change to one of the dynamic respository checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+The Layer7 Operator uses the dynamic repository checksums to keep gateway configuration in sync with repository configuration. We can trigger a dynamic gateway update by modifying one of the dynamic repository checksums. Edit the gateway pod and make a change to one of the dynamic repository checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
 
 Use the ssg pod name output from the above command in the below command:
 ```
