@@ -312,7 +312,7 @@ kubectl get pod <pod-name> -oyaml
 
 ## 9. Test the Gateway Deployment
 
-Now, let's connect test our gateway by calling an API and connecting with Policy Manager to view the gateway's configuration that was applied using Repository references
+Now, let's test our gateway by calling an API and connecting with Policy Manager to view the gateway's configuration that was applied using Repository references.
 
 First, find the external IP address for the gateway service in your namespace:
 
