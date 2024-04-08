@@ -26,7 +26,7 @@ The [Layer7 Operator](https://github.com/CAAPIM/layer7-operator/wiki/Getting-Sta
 
 In this exercise, we will deploy the Layer7 Operator. We will then deploy a gateway custom resource to deploy and scale a gateway using the Layer7 Operator.
 
-![Lab Exercise 2 Recording]()
+![Lab Exercise 2 Recording](https://youtu.be/grVKTUTavA8)
 
 ## 3. Change Directory
 
