@@ -14,7 +14,7 @@
 ## 1. Overview
 This repository provides step by step instructions and supporting artifacts for a number of Layer7 Cloud Workshop lab exercises. The lab exercises introduce participants to Graphman, the Layer7 Operator, Open Telemetry and external secret management using the Layer7 Operator.
 
-![Setup Recording]()
+![Setup Recording](https://youtu.be/9GW80RktVCs)
 
 
 ## 2. Prerequisites
