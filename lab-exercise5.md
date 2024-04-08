@@ -18,7 +18,7 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 This exercise combines the previous Layer7 Operator exercises into a more advanced example.
 
-![Lab Exercise 5 Recording]()
+![Lab Exercise 5 Recording](https://youtu.be/6rH6LGDj0no)
 
 ## 3. Create Repository Custom Resources
 There are three Repository custom resources defined here, [`./exercise5-resources/repositories/`](./exercise5-resources/repositories/). These make up an example framework that aims to break up more complex configuration into more manageable parts. Parts that can be managed separately by separate teams in separate repositories with different change life cycles. These are provided purely as an example, and to demonstrate related concepts during these lab exercises.
