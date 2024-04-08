@@ -19,7 +19,7 @@ Please make sure you've completed the steps [here](./readme.md) before beginning
 
 This lab will introduce you to the [Graphman API](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-0/apis-and-toolkits/graphman-management-api.html), a new more flexible and more capable Gateway management API alternative to the Restman API; and its CLI client, the [graphman-client](https://github.com/Layer7-Community/graphman-client), an alternative to the Gateway Management Utility (or GMU). Graphman can be used for managing Gateway configuration as code. Graphman is also used by they Layer7 Operator for the same.
 
-![Lab Exercise 1 Recording]()
+![Lab Exercise 1 Recording](https://youtu.be/ww6qeTAOgPI)
 
 ## 3. Comparing Environments
 
