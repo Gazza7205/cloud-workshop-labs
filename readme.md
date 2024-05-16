@@ -27,8 +27,8 @@ These prerequisites are required for completing the lab exercises in the Layer7 
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) or [GitHub Desktop](https://docs.github.com/en/desktop/installing-and-authenticating-to-github-desktop/installing-github-desktop)
 - [kubectl (v1.27+)](https://kubernetes.io/docs/tasks/tools/)
 - [Node.js (v16+)](https://nodejs.org/en/download)
-- graphman-client [v1.2.0](https://github.com/Layer7-Community/graphman-client/tree/release/v1.2.00)
-- [Temurin OpenJDK 11](https://adoptium.net/temurin/releases/?version=11) (for Mac users; 11 or later depending on version of Layer7 Policy Manager deployed at the time of the workshop)
+- [graphman-client v1.2.0](https://github.com/Layer7-Community/graphman-client/tree/release/v1.2.00)
+- [Temurin OpenJDK 17](https://adoptium.net/temurin/releases/?version=17) (for Mac users)
 - [Layer7 Policy Manager 11.1](https://support.broadcom.com/group/ecx/productfiles?subFamily=API%20GATEWAY&sellable=APIENT990&release=11.1&os=MULTI-PLATFORM&servicePk=0&language=EN) (or later depending on actual gateway version deployed at the time of the workshop)
 
 ## 3. Share GitHub ID
