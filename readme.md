@@ -27,9 +27,9 @@ These prerequisites are required for completing the lab exercises in the Layer7 
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) or [GitHub Desktop](https://docs.github.com/en/desktop/installing-and-authenticating-to-github-desktop/installing-github-desktop)
 - [kubectl (v1.27+)](https://kubernetes.io/docs/tasks/tools/)
 - [Node.js (v16+)](https://nodejs.org/en/download)
-- graphman-client ([v1.0.01](https://github.com/Layer7-Community/graphman-client/tree/release/v1.0.01) if using the pre-11.1 gateway combined image; [v1.1.0](https://github.com/Layer7-Community/graphman-client/tree/release/v1.1.00) if using a 11.1+ gateway image)
+- graphman-client [v1.2.0](https://github.com/Layer7-Community/graphman-client/tree/release/v1.2.00)
 - [Temurin OpenJDK 11](https://adoptium.net/temurin/releases/?version=11) (for Mac users; 11 or later depending on version of Layer7 Policy Manager deployed at the time of the workshop)
-- [Layer7 Policy Manager 11.0 CR1](https://support.broadcom.com/group/ecx/productfiles?sellable=APIENT990&release=11.0&os=MULTI-PLATFORM&servicePk=0000&language=EN) (or later depending on actual gateway version deployed at the time of the workshop)
+- [Layer7 Policy Manager 11.1](https://support.broadcom.com/group/ecx/productfiles?subFamily=API%20GATEWAY&sellable=APIENT990&release=11.1&os=MULTI-PLATFORM&servicePk=0&language=EN) (or later depending on actual gateway version deployed at the time of the workshop)
 
 ## 3. Share GitHub ID
 A private GitHub repository is used for sharing a temporary license and environment related information required by this workshop. You must share your GitHub ID with the workshop coordinator to be given access to the private repository.
