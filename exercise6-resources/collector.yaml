@@ -3,14 +3,16 @@ kind: OpenTelemetryCollector
 metadata:
   name: workshopuser(n)-eck
 spec:
-  image: otel/opentelemetry-collector-contrib:0.77.0
+  image: otel/opentelemetry-collector-contrib:0.97.0
   mode: sidecar
   config: |
     receivers:
       otlp:
         protocols:
           grpc:
+            endpoint: 0.0.0.0:4317
           http:
+            endpoint: 0.0.0.0:4318
     processors:
       batch:
       resource:
@@ -19,16 +21,16 @@ spec:
           value: "workshopuser(n)-ssg"
           action: upsert
     exporters:
-      logging:
-        loglevel: warn 
+      debug:
+        verbosity: basic
       otlp/elastic:
         endpoint: apm-server-apm-http.elastic.svc.cluster.local:8200
         tls:
           insecure_skip_verify: true
         headers:
           Authorization: "Bearer 4c3K0d9UP05C6nicW5Wl8rC7"
-      jaeger:
-        endpoint: jaeger-cloud-workshop-collector-headless.observability.svc.cluster.local:14250
+      otlp:
+        endpoint: jaeger-cloud-workshop-collector-headless.observability.svc.cluster.local:4317
         tls:
           insecure: true
     service:
@@ -41,7 +43,7 @@ spec:
         traces:
           receivers: [otlp]
           processors: [resource,batch]
-          exporters: [jaeger,otlp/elastic]
+          exporters: [otlp,otlp/elastic]
         metrics:
           receivers: [otlp]
           processors: [resource,batch]

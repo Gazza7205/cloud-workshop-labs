@@ -3,13 +3,13 @@ kind: Gateway
 metadata:
   name: ssg
 spec:
-  version: "11.0.00_CR1"
+  version: "11.1.00"
   license:
     accept: true
     secretName: gateway-license
   app:
     replicas: 1
-    image: docker.io/layer7api/gateway:11.0.00_COMBINED
+    image: docker.io/caapim/gateway:11.1.00
     imagePullPolicy: IfNotPresent
     updateStrategy:
       type: rollingUpdate
@@ -55,7 +55,7 @@ spec:
           key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
     initContainers:
     - name: workshop-init
-      image: harbor.sutraone.com/mock/workshop-init:1.0.0
+      image: docker.io/layer7api/workshop-init:1.0.0
       imagePullPolicy: IfNotPresent
       volumeMounts:
       - name: config-directory
@@ -85,7 +85,7 @@ spec:
     java:
       jvmHeap:
         calculate: true
-        percentage: 50
+        percentage: 75
         default: 2g
       extraArgs:
       - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
@@ -144,13 +144,3 @@ spec:
         protocol: TCP
     ingress:
       enabled: false
-    # containerSecurityContext:
-    #   runAsNonRoot: true
-    #   runAsUser: 1000669998
-    #   capabilities:
-    #     drop:
-    #     - ALL
-    #   allowPrivilegeEscalation: false
-    # podSecurityContext:
-    #   runAsUser: 1000669998
-    #   runAsGroup: 1000669998

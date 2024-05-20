@@ -37,14 +37,14 @@ spec:
 On line 19, replace `(n)` with your workshop namespace number (e.g. workshopuser99-ssg):
 ```yaml
 ...
-    processors:
-      batch:
-      resource:
-        attributes:
-        - key: layer7gw.name
-          value: "workshopuser99-ssg"
-          action: upsert
-    exporters:
+processors:
+  batch:
+  resource:
+    attributes:
+    - key: layer7gw.name
+      value: "workshopuser99-ssg"
+      action: upsert
+exporters:
 ...
 ```
 
@@ -70,9 +70,9 @@ Create the OpenTelemetry Collector custom resource:
 
 The OpenTelemetry Operator also manages [OpenTelemetry Instrumentation](https://github.com/open-telemetry/opentelemetry-operator?tab=readme-ov-file#opentelemetry-auto-instrumentation-injection) custom resources, and uses them to automatically instrument workloads, like the gateway, by injecting OpenTelemetry Agents and related configuration.
 
-Open the OpenTelemetry Instrumentation custom resource file here, [`./exercise6-resources/instrumentation.yaml`](./exercise6-resources/instrumentation.yaml).
+View the OpenTelemetry Instrumentation custom resource file here, [`./exercise6-resources/instrumentation.yaml`](./exercise6-resources/instrumentation.yaml).
 
-On line 8, replace `(n)` with your workshop namespace number (e.g. workshopuser99-ssg):
+<!-- On line 8, replace `(n)` with your workshop namespace number (e.g. workshopuser99-ssg):
 ```yaml
 ...
 spec:
@@ -81,7 +81,7 @@ spec:
       value: workshopuser99-ssg
     - name: OTEL_METRICS_EXPORTER
 ...
-```
+``` -->
 
 Create the OpenTelemetry Instrumentation custom resource:
 
@@ -139,33 +139,38 @@ We can now configure our Gateway custom resource for OpenTelemetry and the Graph
 
 Open the Gateway custom resource file here, [`./exercise6-resources/gateway.yaml`](./exercise6-resources/gateway.yaml).
 
-First, add OpenTelemetry related cluster wide properties by _**uncommenting lines 105 - 110**_ (the other related cluster wide properties will be used in a later lab exercise).
+First, add OpenTelemetry related cluster wide properties by _**uncommenting lines 102 - 116**_ .
 
 ```yaml
 ...
-        - name: audit.setDetailLevel.FINE
-          value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-        - name: otel.serviceMetricEnabled
-          value: "true"
-        - name: otel.metricPrefix
-          value: l7_
-        - name: otel.resourceAttributes
-          value: k8s.container.name,k8s.pod.name
-        # - name: otel.traceEnabled
-        #   value: "true"
+# - name: otel.enabled
+#   value: "true"
+# - name: otel.serviceMetricEnabled
+#   value: "true"
+# - name: otel.traceEnabled
+#   value: "true"
+# - name: otel.metricPrefix
+#   value: l7_
+# - name: otel.traceConfig
+#   value: |
+#     {
+#       "services": [
+#         {"resolutionPath": ".*"}
+#       ]
+#     }
 ...
 ```
 
-Next, disable auto instrumentation of all libraries except JDBC and JVM runtime-metrics by _**uncommenting lines 105 - 110**_ (go [here](https://opentelemetry.io/docs/languages/java/automatic/configuration/#suppressing-specific-agent-instrumentation) for a list of libraries that the agent can auto-instrument).
+Next, configure the Gateway via system properties to work with the OpenTelemetry Agent by _**uncommenting lines 132 - 137**_ (go [here](https://opentelemetry.io/docs/languages/java/automatic/configuration/#suppressing-specific-agent-instrumentation) for a list of libraries that the agent can auto-instrument).
 
 ```yaml
 ...
-      - -Dotel.instrumentation.common.default-enabled=false
-      - -Dotel.instrumentation.opentelemetry-api.enabled=true
-      - -Dotel.instrumentation.runtime-metrics.enabled=true
-      - -Dotel.instrumentation.jdbc.enabled=true
-      - -Dotel.instrumentation.jdbc-datasource.enabled=true
-    listenPorts:
+# otel.instrumentation.common.default-enabled=true
+# otel.instrumentation.opentelemetry-api.enabled=true
+# otel.instrumentation.runtime-metrics.enabled=true
+# otel.instrumentation.runtime-telemetry.enabled=true
+# otel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true
+# otel.java.global-autoconfigure.enabled=true
 ...
 ```
 
@@ -173,13 +178,11 @@ Then, add the Graphman bundle by _**commenting out line 30 and uncommenting line
 
 ```yaml
 ...
-        cpu: 2
-    # bundle: []
-    bundle:
-    - type: graphman
-      source: secret
-      name: graphman-otel-test-services
-    # - type: graphman
+# bundle: []
+  bundle:
+  - type: graphman
+    source: secret
+    name: graphman-otel-test-services
 ...
 ```
 
@@ -187,12 +190,12 @@ Finally, add OpenTelemetry annotations by _**uncommenting lines 11 - 14**_. At t
 
 ```yaml
 ...
-  app:
-    annotations:
-      sidecar.opentelemetry.io/inject: "workshopuser99-eck"
-      instrumentation.opentelemetry.io/inject-java: "true"
-      instrumentation.opentelemetry.io/container-names: "gateway"
-    replicas: 1
+app:
+  podAnnotations:
+    sidecar.opentelemetry.io/inject: "workshopuser99-eck"
+    instrumentation.opentelemetry.io/inject-java: "true"
+    instrumentation.opentelemetry.io/container-names: "gateway"
+  replicas: 1
 ...
 ```
 

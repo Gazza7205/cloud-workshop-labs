@@ -3,12 +3,12 @@ kind: Gateway
 metadata:
   name: ssg
 spec:
-  version: "11.0.00_CR1"
+  version: "11.1.00"
   license:
     accept: true
     secretName: gateway-license
   app:
-    annotations:
+    podAnnotations:
       # Collector configuration CRD name.
       sidecar.opentelemetry.io/inject: "workshopuser(n)-eck"
       # Container language type agent to inject.
@@ -16,7 +16,7 @@ spec:
       # Container name to instrument
       instrumentation.opentelemetry.io/container-names: "gateway"
     replicas: 1
-    image: docker.io/layer7api/gateway:11.0.00_COMBINED
+    image: docker.io/caapim/gateway:11.1.00
     imagePullPolicy: IfNotPresent
     updateStrategy:
       type: rollingUpdate
@@ -42,9 +42,7 @@ spec:
         enabled: false
     initContainers: []
     management:
-      #secretName: gateway-secret
-      username: admin
-      password: 7layer
+      secretName: gateway-secret
       service:
         enabled: false
         type: ClusterIP
@@ -63,13 +61,10 @@ spec:
         hostname: gateway.brcmlabs.com
       database:
         enabled: false # this runs the gateway in dbbacked/ephemeral mode
-      #  jdbcUrl: "jdbc:mysql://cluster1-haproxy.pxc.svc.cluster.local:3306/ssg"
-      #  username: "gateway"
-      #  password: "ACm8BDr3Rfk2Flx9V"
     java:
       jvmHeap:
         calculate: true
-        percentage: 50
+        percentage: 75
         default: 2g
       extraArgs:
       - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
@@ -80,9 +75,6 @@ spec:
       - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
       - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true 
       - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
-      - -Dotel.instrumentation.common.default-enabled=false
-      - -Dotel.instrumentation.opentelemetry-api.enabled=true
-      - -Dotel.instrumentation.runtime-metrics.enabled=true
     listenPorts:
       harden: false
       custom:
@@ -102,27 +94,21 @@ spec:
             com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
         - name: audit.setDetailLevel.FINE
           value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
+        - name: otel.enabled
+          value: "true"
         - name: otel.serviceMetricEnabled
+          value: "true"
+        - name: otel.traceEnabled
           value: "true"
         - name: otel.metricPrefix
           value: l7_
-        - name: otel.resourceAttributes
-          value: k8s.container.name,k8s.pod.name  
-        - name: otel.traceEnabled
-          value: "true"
         - name: otel.traceConfig
           value: |
-              {
-                "services": [
-                  {"url": ".*/test.*"}
-                ],
-                "assertions": {
-                  "exclude" : ["SetVariable"]
-                },
-                "contextVariables": {
-                  "assertions" : [".*"]
-                }
-              }     
+            {
+              "services": [
+                {"resolutionPath": ".*"}
+              ]
+            }       
     system:
       properties: |-
         # Default Gateway system properties
@@ -137,6 +123,13 @@ spec:
         # Must be set correctly when Gateway is running in FIPS mode. If not specified it will default to PKCS12.
         javax.net.ssl.trustStoreType=jks
         com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+        # OpenTelemetry Agent Configuration
+        otel.instrumentation.common.default-enabled=true
+        otel.instrumentation.opentelemetry-api.enabled=true
+        otel.instrumentation.runtime-metrics.enabled=true
+        otel.instrumentation.runtime-telemetry.enabled=true
+        otel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true
+        otel.java.global-autoconfigure.enabled=true
         # Additional properties go here
     service:
       # annotations:
@@ -152,13 +145,3 @@ spec:
         protocol: TCP
     ingress:
       enabled: false
-    # containerSecurityContext:
-    #   runAsNonRoot: true
-    #   runAsUser: 1000669998
-    #   capabilities:
-    #     drop:
-    #     - ALL
-    #   allowPrivilegeEscalation: false
-    # podSecurityContext:
-    #   runAsUser: 1000669998
-    #   runAsGroup: 1000669998

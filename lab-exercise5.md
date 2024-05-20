@@ -191,7 +191,7 @@ status:
     ready: true
     startTime: 2023-09-23 13:27:34 +0000 UTC
   host: gateway.brcmlabs.com
-  image: docker.io/caapim/gateway:11.0.00_CR1
+  image: docker.io/caapim/gateway:11.1.00
   managementPod: ssg-74bc56d55c-cgctb
   ready: 1
   replicas: 1
@@ -221,7 +221,7 @@ status:
     storageSecretName: l7-gw-mysubscriptions-repository-main
     type: dynamic
   state: Ready
-  version: 11.0.00_CR1
+  version: 11.1.00
 ```
 
 ## 8. Inspect the Gateway Deployment
@@ -238,7 +238,7 @@ Here is an example of the previous command's output (for just the Init Container
 ...
 Init Containers:
   workshop-init:
-   Image:        harbor.sutraone.com/mock/workshop-init:1.0.0
+   Image:        docker.io/layer7api/workshop-init:1.0.0
    Port:         <none>
    Host Port:    <none>
    Environment:  <none>

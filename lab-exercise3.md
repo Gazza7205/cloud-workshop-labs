@@ -30,7 +30,7 @@ In this section, we will create and inspect a Kubernetes secret used to manage g
 
 First, create the secret:
 ```
-kubectl create secret generic gateway-secret --from-literal SSG_ADMIN_USERNAME=admin --from-literal SSG_ADMIN_PASSWORD=7layer
+kubectl create secret generic gateway-secret --from-literal SSG_ADMIN_USERNAME=admin --from-literal SSG_ADMIN_PASSWORD=7layer --from-literal SSG_CLUSTER_PASSWORD=7layer
 ```
 
 Then, inspect the secret:
@@ -47,6 +47,9 @@ Try using `jsonpath` to inspect the secret values:
   ```
   ```
   kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" | base64 -d
+  ```
+    ```
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_CLUSTER_PASSWORD}" | base64 -d
   ```
 </details>
 <details>
@@ -380,7 +383,7 @@ Next, enable the bootstrap script (~ line 27) and add an initContainer. For exam
         enabled: true
     initContainers:
     - name: workshop-init
-      image: harbor.sutraone.com/mock/workshop-init:1.0.0
+      image: docker.io/layer7api/workshop-init:1.0.0
       imagePullPolicy: IfNotPresent
       volumeMounts:
       - name: config-directory
