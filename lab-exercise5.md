@@ -1,14 +1,15 @@
 # Lab Exercise 5
 
 1. [Prerequisites](#1-prerequisites)
-1. [Overview](#2-overview)
-1. [Create Repository Custom Resources](#3-create-repository-custom-resources)
-1. [Configure Repository References](#4-configure-repository-references)
-1. [Singletons](#5-singletons)
-1. [Update the Gateway Custom Resource](#6-update-the-gateway-custom-resource)
-1. [Inspect the Gateway Custom Resource](#7-inspect-the-gateway-custom-resource)
-1. [Inspect the Gateway Deployment](#8-inspect-the-gateway-deployment)
-1. [Test the Gateway Deployment](#9-test-the-gateway-deployment)
+2. [Overview](#2-overview)
+3. [Create Repository Custom Resources](#3-create-repository-custom-resources)
+4. [Configure Repository References](#4-configure-repository-references)
+5. [Singletons](#5-singletons)
+6. [Update the Gateway Custom Resource](#6-update-the-gateway-custom-resource)
+7. [Inspect the Gateway Custom Resource](#7-inspect-the-gateway-custom-resource)
+8. [Inspect the Gateway Deployment](#8-inspect-the-gateway-deployment)
+9. [Test the Gateway Deployment](#9-test-the-gateway-deployment)
+10. [Remove your Gateway](#10-remove-your-gateway)
 
 ## 1. Prerequisites
 
@@ -348,6 +349,11 @@ Finally, connect to your gateway with Policy Manager to view the statically and 
 User Name: admin
 Password: 7layer
 Gateway: <your-external-ip>
+```
+
+## 10. Remove your Gateway
+```
+kubectl delete gateway ssg
 ```
 
 # Start [Lab Exercise 6](./lab-exercise6.md)

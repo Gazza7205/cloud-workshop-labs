@@ -2,11 +2,10 @@
 # Lab Exercise 8
 
 1. [Prerequisites](#1-prerequisites)
-1. [Overview](#2-overview)
-1. [Enable Tracing on the Gateway](#3-enable-tracing-on-the-gateway)
-1. [Update the Gateway](#4-update-the-gateway)
+2. [Overview](#2-overview)
+3. [Enable Tracing on the Gateway](#3-enable-tracing-on-the-gateway)
 1. [Call Test Service](#5-call-test-service)
-1. [View Trace in Jaeger](#6-view-trace-in-jaeger)
+1. [View Trace in Grafana](#6-view-trace-in-grafana)
 
 ## 1. Prerequisites
 
@@ -26,66 +25,25 @@ The `otel.traceConfig` cluster-wide property can be used to control which servic
 
 Continue using the Gateway custom resource file from lab exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml).
 
-Enable tracing by _**uncommenting lines 111 - 112**_:
+
+You'll notice that when we updated this Gateway we uncommented the following cluster-wide properties, you will have also noticed traces in the Grafana Dashboard
 ```yaml
 ...
-        - name: otel.traceEnabled
-          value: "true"
-        - name: otel.traceConfig
-          value: |
-              {
-                "services": [
-                  {"url": ".*/test.*"}
-                ],
-                "contextVariables": {
-                  "assertions" : [".*"]
-                }
-              }
-    system:
+- name: otel.traceEnabled
+  value: "true"
+- name: otel.traceConfig
+  value: |
+    {
+      "services": [
+        {"resolutionPath": ".*"}
+      ]
+    }
 ...
 ```
 
-## 4. Update the Gateway
-Apply the changes made to Gateway custom resource. 
+## 4. Call Test Service
 
-<details>
-  <summary><b>Linux/MacOS</b></summary>
-
-  ```
-  kubectl apply -f ./exercise6-resources/gateway.yaml
-  ```
-</details>
-<details>
-  <summary><b>Windows</b></summary>
-
-  ```
-  kubectl apply -f exercise6-resources\gateway.yaml
-  ```
-</details>
-<br/>
-
-When only making cluster-wide property changes in this way, the gateway pod will not restart to pick up the changes. For now, we can delete the gateway pod, and Kuberenetes will recreate it with the new cluster-wide properties. As you've already seen in previous lab exercises, using the Layer7 Operator with Repository custom resources may be a better way to promote changes like these.
-
-```
-kubectl delete pod -l app.kubernetes.io/name=ssg
-```
-
-Check the status of the ssg pods:
-```
-kubectl get pods
-```
-
-And wait until there is just one ssg pod with 2/2 containers READY. For example:
-```
-NAME                                                  READY   STATUS      RESTARTS       AGE
-api-requests-5bvx2                                    0/1     Completed   0              5m38s
-layer7-operator-controller-manager-7c996ccfb6-9qsw6   2/2     Running     1 (108m ago)   109m
-ssg-56ff97b54d-nsx86                                  2/2     Running     0              116s
-```
-
-## 5. Call Test Service
-
-We will call this test service to generate a trace:
+We will call this test service to generate a trace: (this request is also part of our test bundle from earlier so you should already have traces present in Grafana)
 
 - **/test5** - Takes two query parameters as input and calculates age (years elapsed). It has an error that needs to be diagnosed and fixed.
   - **dob** - Date of Birth - Default format dd/MM/yyyy
@@ -129,13 +87,16 @@ The API should respond like so:
 </soapenv:Envelope>
 ```
 
-## 6. View Trace in Jaeger
-1. Open [Jaeger](https://jaeger.brcmlabs.com/).
-1. Select the your service under Service dropdown (workshopuser(n)-ssg)
-1. Search for and select `age` in the **Operation** dropdown field (the service name is "age" and the service URL is "/test5").
-1. Click on **Find Traces**
-1. Click on one of the traces in the search result set.
-1. Explore the trace spans and check for errors. In particular, you should find a Javascript error like follows:
+## 6. View Trace in Grafana
+1. Login into [Grafana](https://grafana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
+2. Click **Dashboards** on the left menu
+3. Expand the Layer7 Folder
+4. Click on **Gateway Dashboard**
+5. Select your gateway deployment (e.g. workshopuser99-ssg) from the **Gateway Deployment** dropdown field at the top of the page.
+6. Select the Age Service
+6. Scroll down to Traces and Logs panel
+7. Click on one of the Traces (will open a new tab)
+8. Click on Logs for this span (will open the service specific Gateway logs on the right)
 
 ![trace](./exercise8-resources/trace.png)
 
