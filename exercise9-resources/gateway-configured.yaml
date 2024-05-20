@@ -3,13 +3,13 @@ kind: Gateway
 metadata:
   name: ssg
 spec:
-  version: "11.0.00_CR1"
+  version: "11.1.00"
   license:
     accept: true
     secretName: gateway-license
   app:
     replicas: 1
-    image: docker.io/layer7api/gateway:11.0.00_COMBINED
+    image: docker.io/caapim/gateway:11.1.00
     imagePullPolicy: IfNotPresent
     updateStrategy:
       type: rollingUpdate
@@ -74,15 +74,15 @@ spec:
           key: SUBSCRIPTIONS_ENCRYPTION_PASSPHRASE
     initContainers:
     - name: workshop-init
-      image: harbor.sutraone.com/mock/workshop-init:1.0.0
+      image: docker.io/layer7api/workshop-init:1.0.0
       imagePullPolicy: IfNotPresent
       volumeMounts:
       - name: config-directory
         mountPath: /opt/docker/custom
     management:
-      #secretName: gateway-secret
-      username: admin
-      password: 7layer
+      secretName: gateway-secret
+      # username: admin
+      # password: 7layer
       service:
         enabled: false
         type: ClusterIP
@@ -107,7 +107,7 @@ spec:
     java:
       jvmHeap:
         calculate: true
-        percentage: 50
+        percentage: 75
         default: 2g
       extraArgs:
       - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
@@ -134,7 +134,7 @@ spec:
             com.l7tech.server.policy.variable.ServerVariables.level = SEVERE
             com.l7tech.external.assertions.odata.server.producer.jdbc.GenerateSqlQuery.level = SEVERE
             com.l7tech.server.policy.assertion.ServerSetVariableAssertion.level = SEVERE
-            com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
+            com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion.level = SEVERE
         - name: audit.setDetailLevel.FINE
           value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
     system:
@@ -152,6 +152,14 @@ spec:
         javax.net.ssl.trustStoreType=jks
         com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
         # Additional properties go here
+    log:
+      override: true
+      properties: |-
+        handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
+        com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.JsonLogFormatter
+        java.util.logging.SimpleFormatter.format=
+        com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
+        com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
     service:
       # annotations:
       type: LoadBalancer

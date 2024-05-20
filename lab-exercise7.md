@@ -2,12 +2,12 @@
 # Lab Exercise 7
 
 1. [Prerequisites](#1-prerequisites)
-1. [Overview](#2-overview)
-1. [Message-Completed Global Policy Fragment](#3-message-completed-global-policy-fragment)
-1. [Configure the Gateway](#4-configure-the-gateway)
-1. [Update the Gateway](#5-update-the-gateway)
-1. [Call Test Services](#6-call-test-services)
-1. [Monitor the Gateway](#7-monitor-the-gateway)
+2. [Overview](#2-overview)
+3. [Message-Completed Global Policy Fragment](#3-message-completed-global-policy-fragment)
+4. [Configure the Gateway](#4-configure-the-gateway)
+5. [Update the Gateway](#5-update-the-gateway)
+6. [Call Test Services](#6-call-test-services)
+7. [Monitor the Gateway](#7-monitor-the-gateway)
 
 ## 1. Prerequisites
 
@@ -58,7 +58,7 @@ Add the new bundle by _**uncommenting lines 35 - 37**_:
 ```
 
 ## 5. Update the Gateway
-Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile the changes.
+Apply the changes made to Gateway custom resource. The Layer7 Operator will then reconcile the changes. Don't forget to update your Gateway name if you are using the gateway in the exercise 7 folder
 
 <details>
   <summary><b>Linux/MacOS</b></summary>
@@ -120,12 +120,12 @@ kubectl logs -f job.batch/api-requests
 ```
 
 ## 7. Monitor the Gateway
-1. Login into [Kibana](https://kibana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
-1. Click the on **Analytics** tile on the Home page
-1. Click the **Dashboard** tile on the Analytics page
-1. Click the **Usage By Org** link on the Dashboards page
-1. Select and include your gateway (e.g. workshopuser99-ssg) from the **Gateway** dropdown field.
-1. You should be able to see API usage by organization for your gateway:
+1. Login into [Grafana](https://grafana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
+2. Click **Dashboards** on the left menu
+3. Expand the Layer7 Folder
+4. Click on **Gateway Dashboard**
+5. Select your gateway deployment (e.g. workshopuser99-ssg) from the **Gateway Deployment** dropdown field at the top of the page.
+6. Scroll down to the bottom of the dashboard to see **Usage by Org**
 
 ![dashboard](./exercise7-resources/dashboard.png)
 

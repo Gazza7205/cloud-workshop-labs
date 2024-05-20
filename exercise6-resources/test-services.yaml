@@ -15,7 +15,7 @@ spec:
       - command:
         - /bin/bash
         - /script.sh
-        image: harbor.sutraone.com/dev/api-requests
+        image: docker.io/layer7api/api-requests:1.0.0
         imagePullPolicy: IfNotPresent
         name: api-requests
         volumeMounts:

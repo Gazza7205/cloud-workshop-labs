@@ -133,6 +133,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
@@ -215,9 +227,9 @@ rules:
   - patch
   - update
 - apiGroups:
-  - monitoring.coreos.com
+  - security.brcmlabs.com
   resources:
-  - servicemonitors
+  - l7apis
   verbs:
   - create
   - delete
@@ -227,9 +239,65 @@ rules:
   - update
   - watch
 - apiGroups:
-  - opentelemetry.io
+  - security.brcmlabs.com
   resources:
-  - opentelemetrycollectors
+  - l7apis/status
+  verbs:
+  - get
+- apiGroups:
+  - security.brcmlabs.com
+  resources:
+  - l7apis
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - security.brcmlabs.com
+  resources:
+  - l7apis/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - security.brcmlabs.com
+  resources:
+  - l7portals
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - security.brcmlabs.com
+  resources:
+  - l7portals/status
+  verbs:
+  - get
+- apiGroups:
+  - security.brcmlabs.com
+  resources:
+  - l7portals
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - security.brcmlabs.com
+  resources:
+  - l7portals/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
   verbs:
   - create
   - delete
