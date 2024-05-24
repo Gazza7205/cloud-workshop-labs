@@ -13,20 +13,21 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-In this exercise we will use OpenTelemetry tracing to help diagnose a service failure.
+This lab exercise will focus on Gateway service transaction traces emitted using OpenTelemetry. We will use traces to diagnose an error in on of the previously deployed test service's policy.
 
 ## 3. Enable Tracing on the Gateway
 
-To be practically useful, we need to be able to selectively enable and filter tracing to have a controlled impact on gateway and OpenTelemetry backend processing and storage resource utilization.
+To be practically useful, we need to be able to selectively enable and filter tracing to have a controlled impact on Gateway and OpenTelemetry backend processing and storage resource utilization.
 
 The `otel.traceEnabled` cluster-wide property can be used to enable and disable tracing.
 
-The `otel.traceConfig` cluster-wide property can be used to control which services, assertions and context variables will be traced. It can also filter tracing to requests sent from a specific client IP address.
+The `otel.traceConfig` cluster-wide property can be used to control which services, assertions and context variables will be traced. It can also filter tracing to requests sent from a specific client IP address or accompanied by a specific query parameter. For examples, go [here](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway/sampling-and-filtering-for-opentelemetry.html#_453eefc6-b883-4185-b10e-d11a94fd0c3c).
 
-Continue using the Gateway custom resource file from lab exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml).
+Continue using the Gateway custom resource file from Lab Exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml).
 
 
-You'll notice that when we updated this Gateway we uncommented the following cluster-wide properties, you will have also noticed traces in the Grafana Dashboard
+You'll notice that when we updated this Gateway we uncommented the following cluster-wide properties, you will have also noticed traces in the Grafana Dashboard:
+
 ```yaml
 ...
 - name: otel.traceEnabled
@@ -43,7 +44,7 @@ You'll notice that when we updated this Gateway we uncommented the following clu
 
 ## 4. Call Test Service
 
-We will call this test service to generate a trace: (this request is also part of our test bundle from earlier so you should already have traces present in Grafana)
+We will call this test service to generate a trace (this request is also part of our test bundle from earlier so you should already have traces present in Grafana):
 
 - **/test5** - Takes two query parameters as input and calculates age (years elapsed). It has an error that needs to be diagnosed and fixed.
   - **dob** - Date of Birth - Default format dd/MM/yyyy
@@ -51,7 +52,7 @@ We will call this test service to generate a trace: (this request is also part o
 
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/dc9343e8-b452-489e-bc83-7201a30a6d51" /></kbd>
 
-First, find the external IP address for the gateway service in your namespace:
+First, find the external IP address for the Gateway service in your namespace:
 
 ```
 kubectl get svc ssg
@@ -64,7 +65,7 @@ NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)               
 ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
 
-Next, try call the test service on the gateway using your external IP address. For example:
+Next, try call the test service on the Gateway using your external IP address. For example:
 
 ```
 curl -k https://<your-external-ip>:8443/test5
@@ -95,8 +96,10 @@ The API should respond like so:
 5. Select your gateway deployment (e.g. workshopuser99-ssg) from the **Gateway Deployment** dropdown field at the top of the page.
 6. Select the Age Service
 6. Scroll down to Traces and Logs panel
-7. Click on one of the Traces (will open a new tab)
-8. Click on Logs for this span (will open the service specific Gateway logs on the right)
+7. Click on one of the Traces (this will open a new tab)
+8. Click on **Logs for this span** (this will open the span specific Gateway logs on the right)
+
+_**Note: Correlating logs to traces and spans is possible, because when tracing is enabled on the gateway, the gateway will inject trace and span IDs into service transaction event logs.**_
 
 ![trace](./exercise8-resources/trace.png)
 

@@ -22,9 +22,9 @@ Kubernetes operators automate tasks traditionally performed by a human operator 
 
 Kubernetes [operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are Kubernetes extensions created using the [Operator SDK](https://github.com/operator-framework/operator-sdk). They make use of custom resources to manage applications and their components adhering to the Kubernetes principle of control loops. A control loop constantly observes the desired state of resources, analyzes the actual state of those resources, and executes actions to synchronize the current state with the desired state as necessary.
 
-The [Layer7 Operator](https://github.com/CAAPIM/layer7-operator/wiki/Getting-Started) has expert knowledge of Layer7 products, and in the preview release, it makes use of [gateway](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource) and [repository](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource) custom resources to automate the deployment, configuration and management of Layer7 API Gateways using static or dynamic config-as-code in the form of Graphman bundles from different sources of truth including git repositories or artifact repositories (or optionally backed by a MySQL database).
+The [Layer7 Operator](https://github.com/CAAPIM/layer7-operator/wiki/Getting-Started) has expert knowledge of Layer7 products, and in the preview release, it makes use of [Gateway](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource) and [Repository](https://github.com/CAAPIM/layer7-operator/wiki/Repository-Custom-Resource) custom resources to automate the deployment, configuration and management of Layer7 API Gateways using static or dynamic config-as-code in the form of Graphman bundles from different sources of truth including git repositories or artifact repositories (or optionally backed by a MySQL database).
 
-In this exercise, we will deploy the Layer7 Operator. We will then deploy a gateway custom resource to deploy and scale a gateway using the Layer7 Operator.
+In this exercise, we will deploy the Layer7 Operator. We will then deploy a Gateway custom resource to deploy and scale a Gateway using the Layer7 Operator.
 
 [Lab Exercise 2 Recording](https://youtu.be/grVKTUTavA8)
 
@@ -153,14 +153,14 @@ kubectl get gateway ssg -oyaml
 
 ## 10. Update the Gateway Custom Resource
 
-Now lets make a change to the Gateway custom resource to see how the Layer7 Operator responds. Let's update its replicas from 1 to 2 to deploy a second gateway:
+Now lets make a change to the Gateway custom resource to see how the Layer7 Operator responds. Let's update its replicas from 1 to 2 to deploy a second Gateway:
 
 ```
 kubectl edit gateway ssg
 ```
 Change `replicas: 1` to `replicas: 2`, and save and exit the editor.
 
-Observe the second gateway pod:
+Observe the second Gateway pod:
 ```
 kubectl get pods
 ```

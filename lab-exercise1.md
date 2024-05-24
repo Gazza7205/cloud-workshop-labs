@@ -23,7 +23,7 @@ This lab will introduce you to the [Graphman API](https://techdocs.broadcom.com/
 
 ## 3. Comparing Environments
 
-In this workshop, we have development and production gateways. At the beginning of the workshop, their configuration is divergent. You can see this divergence by calling the same API in both environments as below:
+In this workshop, we have development and production Gateways. At the beginning of the workshop, their configuration is divergent. You can see this divergence by calling the same API in both environments as below:
 
 Call the API in development:
 ```
@@ -35,27 +35,27 @@ Call the API in production:
 curl https://myprodgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 ```
 
-> **_NOTE: When sharing this workshop environment with multiple users, or reusing an environment that has been used in a prior workshop, the difference between development and production may not exist as it may have been reconciled ahead of time. The instructor can reset the state of development and production by deleting the respective gateway pods._**
+> **_NOTE: When sharing this workshop environment with multiple users, or reusing an environment that has been used in a prior workshop, the difference between development and production may not exist as it may have been reconciled ahead of time. The instructor can reset the state of development and production by deleting the respective Gateway pods._**
 
-You should see different responses between development and production which is a reflection that the respective gateway configuration is divergent.
+You should see different responses between development and production which is a reflection that the respective Gateway configuration is divergent.
 
 ## 4. Understanding the Example Gateway Configuration
 
-This example gateway organization is inspired by real-world customer setups that have been proven to scale. The actual APIs are self-contained and can be used as-is but these are just examples, the configuration itself is not meant to be used for your own project, but rather for understanding how to best manage your gateway configuration.
+This example Gateway organization is inspired by real-world customer setups that have been proven to scale. The actual APIs are self-contained and can be used as-is but these are just examples, the configuration itself is not meant to be used for your own project, but rather for understanding how to best manage your Gateway configuration.
 
 ### Policy Tree Structure
 
-The example gateway configuration policy tree looks like this:
+The example Gateway configuration policy tree looks like this:
 
 ![example policy tree](exercise1-resources/configExampleTree.png)
 
 APIs are located under the folder `/myApis`. These APIs make use of policies that are located under the folder `/bootstrapableFramework`.
 
-Graphman (or the Gateway GraphQL Management Service) is another internal service deployed on the gateway with the URI `/graphman`.
+Graphman (or the Gateway GraphQL Management Service) is another internal service deployed on the Gateway with the URI `/graphman`.
 
 ### Other Configuration
 
-In addition to APIs and policies, a gateway contains other configuration entities. In this example, you will find cluster-wide properties, database connections, broker connections, certificates, keys, secrets, etc.
+In addition to APIs and policies, a Gateway contains other configuration entities. In this example, you will find cluster-wide properties, database connections, broker connections, certificates, keys, secrets, etc.
 
 ### Separation of Concerns and Associated Configuration
 
@@ -121,7 +121,7 @@ Using graphman-client, you can export configuration from the development environ
 
 ### Export all, and trim
 
-Exporting the entire configuration from the gateway is all-encompassing and non-discriminate. You will get more configuration than you are interested in, but it is still a common starting point.
+Exporting the entire configuration from the Gateway is all-encompassing and non-discriminate. You will get more configuration than you are interested in, but it is still a common starting point.
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
@@ -138,7 +138,7 @@ Exporting the entire configuration from the gateway is all-encompassing and non-
 </details>
 <br/>
 
-Some of the configuration returned is local details which are managed locally at each target deployments. This includes the main key for the gateway, the local administrator account, the listening ports which are set locally, etc. You can "trim" unwanted configuration to boil it down to the area of interest.
+Some of the configuration returned is local details which are managed locally at each target deployments. This includes the main key for the Gateway, the local administrator account, the listening ports which are set locally, etc. You can "trim" unwanted configuration to boil it down to the area of interest.
 
 In the following set of commands, we take the total configuration which we just extracted, and explode it to a folder named `base`. Then we remove the local configuration entities which we don't want, and implode the configuration into a new bundle named trimmed.json.
 <details>
@@ -289,13 +289,13 @@ Sometimes, you want to combine configuration from different sources into a singl
 
 > **_NOTE: When sharing this workshop environment with multiple users, anybody can change the configuration of the production gateway. It's possible that somebody might apply changes to production ahead of time and affect your ability to detect an expected change between development and production._**
 
-There are many ways to leverage the configuration you captured in these exercises. For example, to apply it statically on gateway startup, you can bootstrap it by mounting the JSON bundle in this folder:
+There are many ways to leverage the configuration you captured in these exercises. For example, to apply it statically on Gateway startup, you can bootstrap it by mounting the JSON bundle in this folder:
 
 ```
 /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
 ```
 
-You can also apply it dynamically to a gateway with the import command without requiring a gateway restart. When using the import command, graphman will send the bundle to the gateway set as the target in graphman.configuration. We already did this at the beginning so we are good to go:
+You can also apply it dynamically to a Gateway with the import command without requiring a Gateway restart. When using the import command, graphman will send the bundle to the Gateway set as the target in graphman.configuration. We already did this at the beginning so we are good to go:
 
 <details>
   <summary><b>Linux/MacOS</b></summary>
