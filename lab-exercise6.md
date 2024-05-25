@@ -262,7 +262,7 @@ kubectl logs -f job.batch/api-requests
 ```
 
 ## 9. Monitor the Gateway
-1. Login into [Grafana](https://grafana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
+1. Login into [Grafana](https://grafana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt)).
 2. Click **Dashboards** on the left menu
 3. Expand the Layer7 Folder
 4. Click on **Gateway Dashboard**

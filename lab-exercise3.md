@@ -61,6 +61,9 @@ Try using `jsonpath` to inspect the secret values:
   ```  
   kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" > output.txt  && certutil -decode output.txt decoded.txt > nul  && type decoded.txt && del decoded.txt output.txt
   ```
+  ```  
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_CLUSTER_PASSWORD}" > output.txt  && certutil -decode output.txt decoded.txt > nul  && type decoded.txt && del decoded.txt output.txt
+  ```
 </details>
 <br/>
 
@@ -377,7 +380,6 @@ Next, enable the bootstrap script (~ line 27) and add an initContainer. For exam
 
 ```yaml
 ...
-    bundle: []
     bootstrap:
       script:
         enabled: true
@@ -388,7 +390,6 @@ Next, enable the bootstrap script (~ line 27) and add an initContainer. For exam
       volumeMounts:
       - name: config-directory
         mountPath: /opt/docker/custom
-    management:
 ...
 ```
 
@@ -396,7 +397,6 @@ Finally, references the bundles that we created by replacing the bundle array (~
 
 ```yaml
 ...
-        cpu:
     bundle:
     - type: restman
       source: secret
@@ -404,7 +404,6 @@ Finally, references the bundles that we created by replacing the bundle array (~
     - type: graphman
       source: secret
       name: graphman-cluster-property-bundle
-    bootstrap:
 ...
 ```
 

@@ -98,19 +98,28 @@ Point graphman to the development environment by editing `graphman.configuration
 
 ```json
 {
-    "sourceGateway": {
-        "address": "https://mydevgw.brcmlabs.com/graphman",
-        "username": "admin",
-        "password": "7layer",
-        "rejectUnauthorized": false,
-        "passphrase": "7layer"
+    "gateways": {
+        "sourceGateway": {
+            "address": "https://mydevgw.brcmlabs.com/graphman",
+            "username": "admin",
+            "password": "7layer",
+            "rejectUnauthorized": false,
+            "passphrase": "7layer",
+            "allowMutations": true
+        },
+        "targetGateway": {
+            "address": "https://myprodgw.brcmlabs.com/graphman",
+            "username": "admin",
+            "password": "7layer",
+            "rejectUnauthorized": false,
+            "passphrase": "7layer",
+            "allowMutations": true
+        }
     },
-    "targetGateway": {
-        "address": "https://myprodgw.brcmlabs.com/graphman",
-        "username": "admin",
-        "password": "7layer",
-        "rejectUnauthorized": false,
-        "passphrase": "7layer"
+    "options": {
+        "log": "info",
+        "policyCodeFormat": "xml",
+        "keyFormat": "p12"
     }
 }
 ```
@@ -126,14 +135,14 @@ Exporting the entire configuration from the Gateway is all-encompassing and non-
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh export --using all --output totalDevEnv.json
+  $GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using all --output totalDevEnv.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat export --using all --output totalDevEnv.json
+  %GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using all --output totalDevEnv.json
   ```
 </details>
 <br/>
@@ -180,14 +189,14 @@ In the previous example, we used the `all` query to pull the entire configuratio
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
+  $GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
+  %GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
   ```
 </details>
 <br/>
@@ -235,14 +244,14 @@ You can now use this query which lets you extract the CWPs that control the SLA 
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh export --using plansCWPs --output memberships.json
+  $GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using plansCWPs --output memberships.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat export --using plansCWPs --output memberships.json
+  %GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using plansCWPs --output memberships.json
   ```
 </details>
 <br/>
@@ -301,14 +310,14 @@ You can also apply it dynamically to a Gateway with the import command without r
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh import --input frameworkWithoutMemberships.json
+  $GRAPHMAN_HOME/graphman.sh import --gateway targetGateway --input frameworkWithoutMemberships.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat import --input frameworkWithoutMemberships.json
+  %GRAPHMAN_HOME%\graphman.bat import --gateway targetGateway --input frameworkWithoutMemberships.json
   ```
 </details>
 <br/>
@@ -346,7 +355,7 @@ Now, you can add your configuration to the GitHub repository. See below the step
 
 ```
 $GRAPHMAN_HOME/graphman.sh explode --input frameworkWithoutMemberships.json --output myTestAltSot
-$GRAPHMAN_HOME/graphman.sh export --using summary --output myTestAltSot/sourceSummary.json
+$GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using summary --output myTestAltSot/sourceSummary.json
 cd myTestAltSot
 git init
 git add .
@@ -367,7 +376,7 @@ git push -u origin main
 
 ```
 %GRAPHMAN_HOME%\graphman.bat explode --input frameworkWithoutMemberships.json --output myTestAltSot
-%GRAPHMAN_HOME%\graphman.bat export --using summary --output myTestAltSot\sourceSummary.json
+%GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using summary --output myTestAltSot\sourceSummary.json
 cd myTestAltSot
 git init
 git add .
