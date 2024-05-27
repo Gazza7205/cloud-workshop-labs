@@ -88,24 +88,15 @@ We will now configure the Gateway custom resource, [`./exercise9-resources/gatew
 First, under line 33, insert the new bundle (i.e `graphman-secret-reader-bundle`):
 ```yaml
 ...
-    bundle:
-      - type: restman
-        source: secret
-        name: restman-cluster-property-bundle
-      - type: graphman
-        source: secret
-        name: graphman-cluster-property-bundle
       - type: graphman
         source: secret
         name: graphman-secret-reader-bundle
-    bootstrap:
 ...
 ```
 
 Then, on line 26, remove the array brackets (e.g. `[]`), and below that line add the external secret references:
 ```yaml
 ...
-        cpu: 2
     externalSecrets:
     - name: database-credentials-gcp
       enabled: true
@@ -122,7 +113,6 @@ Then, on line 26, remove the array brackets (e.g. `[]`), and below that line add
       enabled: true
       description: a private key
       variableReferencable: false
-    bundle:
 ...
 ```
 
