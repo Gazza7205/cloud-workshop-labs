@@ -50,7 +50,7 @@ We will call this test service to generate a trace (this request is also part of
   - **dob** - Date of Birth - Default format dd/MM/yyyy
   - **format** (optional) - Specify the format of dob
 
-<kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/dc9343e8-b452-489e-bc83-7201a30a6d51" /></kbd>
+<kbd><img src="./exercise8-resources/test-service-5-policy.png" /></kbd>
 
 First, find the external IP address for the Gateway service in your namespace:
 
@@ -69,10 +69,12 @@ ssg-collector-monitoring             ClusterIP      10.96.12.233   <none>       
 workshopuser2-ssg                    LoadBalancer   10.96.8.127    35.185.239.250   8443:30929/TCP,9443:30052/TCP   154m
 ```
 
-Next, try call the test service on the Gateway using your external IP address. For example:
+Next, call the test service on the Gateway using your external IP address several times. _**Note: The OpenTelemetry instrumentation configured for these exercises is using a sampling rate of 0.25 per parent ID. That means the Collector will process 1 of every 4 traces to the backend.**_
+
+For example:
 
 ```
-curl -k https://<your-external-ip>:8443/test5
+curl -k "https://<your-external-ip>:8443/test5?dob=01/01/1971"
 ```
 
 The API should respond like so:
