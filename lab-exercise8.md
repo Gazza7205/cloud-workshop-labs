@@ -23,7 +23,7 @@ The `otel.traceEnabled` cluster-wide property can be used to enable and disable 
 
 The `otel.traceConfig` cluster-wide property can be used to control which services, assertions and context variables will be traced. It can also filter tracing to requests sent from a specific client IP address or accompanied by a specific query parameter. For examples, go [here](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway/sampling-and-filtering-for-opentelemetry.html#_453eefc6-b883-4185-b10e-d11a94fd0c3c).
 
-Continue using the Gateway custom resource file from Lab Exercise 6 [exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml).
+Continue using the Gateway custom resource file from Lab Exercise 6, [`./exercise6-resources/gateway.yaml`](./exercise6-resources/gateway.yaml).
 
 
 You'll notice that when we updated this Gateway we uncommented the following cluster-wide properties, you will have also noticed traces in the Grafana Dashboard:
@@ -55,14 +55,18 @@ We will call this test service to generate a trace (this request is also part of
 First, find the external IP address for the Gateway service in your namespace:
 
 ```
-kubectl get svc ssg
+kubectl get svc
 ```
 
-Here is an example of the previous command's output. In this example, the external IP address is **34.168.26.20**. Yours will be different.
+Here is an example of the previous command's output. In this example, the external IP address is **35.185.239.250**. Yours will be different.
 
 ```
-NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)                         AGE
-ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
+NAME                                 TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                         AGE
+controller-manager-metrics-service   ClusterIP      10.96.11.69    <none>           8443/TCP                        54d
+ssg-collector                        ClusterIP      10.96.2.217    <none>           4317/TCP,4318/TCP               159m
+ssg-collector-headless               ClusterIP      None           <none>           4317/TCP,4318/TCP               159m
+ssg-collector-monitoring             ClusterIP      10.96.12.233   <none>           8888/TCP                        159m
+workshopuser2-ssg                    LoadBalancer   10.96.8.127    35.185.239.250   8443:30929/TCP,9443:30052/TCP   154m
 ```
 
 Next, try call the test service on the Gateway using your external IP address. For example:
