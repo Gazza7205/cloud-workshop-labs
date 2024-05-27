@@ -2,10 +2,11 @@
 # Lab Exercise 8
 
 1. [Prerequisites](#1-prerequisites)
-2. [Overview](#2-overview)
-3. [Enable Tracing on the Gateway](#3-enable-tracing-on-the-gateway)
-1. [Call Test Service](#5-call-test-service)
-1. [View Trace in Grafana](#6-view-trace-in-grafana)
+1. [Overview](#2-overview)
+1. [Enable Tracing on the Gateway](#3-enable-tracing-on-the-gateway)
+1. [Call Test Service](#4-call-test-service)
+1. [View Trace in Grafana](#5-view-trace-in-grafana)
+1. [Remove your Gateway](#6-remove-your-gateway)
 
 ## 1. Prerequisites
 
@@ -94,7 +95,7 @@ The API should respond like so:
 </soapenv:Envelope>
 ```
 
-## 6. View Trace in Grafana
+## 5. View Trace in Grafana
 1. Login into [Grafana](https://grafana.brcmlabs.com/) (using credentials found [here](https://github.com/CAAPIM/cloud-workshop-labs-environment/blob/main/cloud-workshop/environment.txt).
 2. Click **Dashboards** on the left menu
 3. Expand the Layer7 Folder
@@ -108,5 +109,22 @@ The API should respond like so:
 _**Note: Correlating logs to traces and spans is possible, because when tracing is enabled on the gateway, the gateway will inject trace and span IDs into service transaction event logs.**_
 
 ![trace](./exercise8-resources/trace.png)
+
+## 6. Remove your Gateway
+<details>
+  <summary><b>Linux/MacOS</b></summary>
+
+  ```
+  kubectl delete -f ./exercise6-resources/gateway.yaml
+  ```
+</details>
+<details>
+  <summary><b>Windows</b></summary>
+
+  ```
+  kubectl delete -f exercise6-resources\gateway.yaml
+  ```
+</details>
+<br/>
 
 # Start [Lab Exercise 9](./lab-exercise9.md)

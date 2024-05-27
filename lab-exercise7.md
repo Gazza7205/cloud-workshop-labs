@@ -2,12 +2,12 @@
 # Lab Exercise 7
 
 1. [Prerequisites](#1-prerequisites)
-2. [Overview](#2-overview)
-3. [Message-Completed Global Policy Fragment](#3-message-completed-global-policy-fragment)
-4. [Configure the Gateway](#4-configure-the-gateway)
-5. [Update the Gateway](#5-update-the-gateway)
-6. [Call Test Services](#6-call-test-services)
-7. [Monitor the Gateway](#7-monitor-the-gateway)
+1. [Overview](#2-overview)
+1. [Message-Completed Global Policy Fragment](#3-message-completed-global-policy-fragment)
+1. [Configure the Gateway](#4-configure-the-gateway)
+1. [Update the Gateway](#5-update-the-gateway)
+1. [Call Test Services](#6-call-test-services)
+1. [Monitor the Gateway](#7-monitor-the-gateway)
 
 ## 1. Prerequisites
 
@@ -43,7 +43,7 @@ The policy and assertion will appear as follows:
 <kbd><img src="https://github.com/Gazza7205/cloud-workshop-labs/assets/59958248/c5d0f49a-5a12-46c8-9c9b-ad2a03a38a15" /></kbd>
 
 ## 4. Configure the Gateway
-Continue using the Gateway custom resource file from Lab Exercise 6, [./exercise6-resources/gateway.yaml](./exercise6-resources/gateway.yaml)
+Continue using the Gateway custom resource file from Lab Exercise 6, [`./exercise6-resources/gateway.yaml`](./exercise6-resources/gateway.yaml).
 
 Add the new bundle by _**uncommenting lines 35 - 37**_:
 ```yaml
