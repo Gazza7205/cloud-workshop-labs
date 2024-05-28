@@ -5,7 +5,7 @@
 1. [Create Kubernetes Secret](#3-create-kubernetes-secret)
 1. [Create Resources](#4-create-resources)
 1. [Configure the Gateway](#5-configure-the-gateway)
-1. [Update the Gatewayx](#6-update-the-gateway)
+1. [Update the Gateway](#6-update-the-gateway)
 1. [Inspect the Gateway](#7-inspect-the-gateway)
 1. [Test your Gateway Deployment](#8-test-your-gateway-deployment)
 
