@@ -23,6 +23,8 @@ The Gateway includes the [OpenTelemetry SDK for Java](https://github.com/open-te
 
 This lab exercise will focus on Gateway service metrics emitted using OpenTelemetry.
 
+[Lab Exercise 6 Recording](https://youtu.be/5ofDT_tfLCU)
+
 ## 3. Create OpenTelemetry Collector Custom Resource
 
 The [OpenTelemetry Operator](https://opentelemetry.io/docs/kubernetes/operator/) has already been deployed to the lab exercise's shared Kubernetes cluster. Just like the Layer7 Operator manages Gateway and Repository custom resources. The OpenTelemetry Operator manages OpenTelemetry Collector custom resources. This section will create an OpenTelemetry customer resource, and the OpenTelemetry Operator will correspondingly deploy an OpenTelemetry Collector as a sidecar to the Gateway pod. The OpenTelemetry Collector collects, filters and forwards metrics, traces and logs emitted by an OpenTelemetry Agent that will be injected into the Gateway and the OpenTelemetry SDK that is used by the Gateway.

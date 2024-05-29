@@ -15,7 +15,9 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-This exercise introduces how to synchronize Kubernetes secrets with stored passwords on Gateways using the Layer7 Operator. This allows you to externalize Gateway secret manage by integrating with [your secrets provider](https://external-secrets.io/latest/provider/aws-secrets-manager/) (see the provider index in left nav menu) using solutions like the [External Secrets Operator](https://external-secrets.io/). The Layer7 Operator will support a similar pattern for external private key management.
+This exercise introduces how to synchronize Kubernetes secrets with stored passwords on Gateways using the Layer7 Operator. This allows you to externalize Gateway secret management by integrating with [your secrets provider](https://external-secrets.io/latest/provider/aws-secrets-manager/) (see the provider index in left nav menu) using solutions like the [External Secrets Operator](https://external-secrets.io/). The Layer7 Operator will support a similar pattern for external private key management.
+
+[Lab Exercise 9 Recording](https://youtu.be/-PlRs0Xi8iA)
 
 ## 3. Create Kubernetes Secret
 

@@ -18,6 +18,8 @@ This lab exercise will focus on Gateway custom metrics emitted using the [Teleme
 
 Each of the test services deployed during Lab Exercise 6 takes a query parameter which denotes the organization of the API consumer. We will use that parameter to monitor the usage of APIs by organization.
 
+[Lab Exercise 7 Recording](https://youtu.be/y3PyDrJdKHs)
+
 ## 3. Message-Completed Global Policy Fragment
 We will use the Telemetry Metric assertion in the message-completed global policy fragment to create a custom `usage_by_org` metric with org, service_name, serviceOid and serviceUrl attributes.
 

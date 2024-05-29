@@ -16,6 +16,8 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 This lab exercise will focus on Gateway service transaction traces emitted using OpenTelemetry. We will use traces to diagnose an error in on of the previously deployed test service's policy.
 
+[Lab Exercise 8 Recording](https://youtu.be/NapGp4k36hc)
+
 ## 3. Enable Tracing on the Gateway
 
 To be practically useful, we need to be able to selectively enable and filter tracing to have a controlled impact on Gateway and OpenTelemetry backend processing and storage resource utilization.
