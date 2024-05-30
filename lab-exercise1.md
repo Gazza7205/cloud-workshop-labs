@@ -157,7 +157,6 @@ In the following set of commands, we take the total configuration which we just 
 $GRAPHMAN_HOME/graphman.sh explode --input totalDevEnv.json --output base
 rm -rd base/listenPorts
 rm -rd base/internalUsers
-rm base/Gateway*webapi.json
 rm base/keys/ssl.json
 rm base/clusterProperties/cluster.hostname.json 
 rm base/clusterProperties/keyStore.defaultSsl.alias.json
@@ -171,7 +170,6 @@ $GRAPHMAN_HOME/graphman.sh implode --input base --output trimmed.json
 %GRAPHMAN_HOME%\graphman.bat explode --input totalDevEnv.json --output base
 rmdir /S/Q base\listenPorts
 rmdir /S/Q base\internalUsers
-del /Q base\Gateway*webapi.json
 del /Q base\keys\ssl.json
 del /Q base\clusterProperties\cluster.hostname.json 
 del /Q base\clusterProperties\keyStore.defaultSsl.alias.json

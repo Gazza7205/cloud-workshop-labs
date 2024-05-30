@@ -129,7 +129,7 @@ type: Opaque
 
 When creating secrets from file you can specify the key. This also works for [kustomize](https://kustomize.io/) which we will be using shortly.
 
-For example only (these commands will fail because the secret already exists):
+_**Note: For example only (these commands will fail because the secret already exists)**_
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
