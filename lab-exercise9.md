@@ -5,7 +5,7 @@
 1. [Create Kubernetes Secret](#3-create-kubernetes-secret)
 1. [Create Resources](#4-create-resources)
 1. [Configure the Gateway](#5-configure-the-gateway)
-1. [Update the Gatewayx](#6-update-the-gateway)
+1. [Update the Gateway](#6-update-the-gateway)
 1. [Inspect the Gateway](#7-inspect-the-gateway)
 1. [Test your Gateway Deployment](#8-test-your-gateway-deployment)
 
@@ -15,7 +15,9 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-This exercise introduces how to synchronize external Kubernetes secrets with stored passwords on gateways.
+This exercise introduces how to synchronize Kubernetes secrets with stored passwords on Gateways using the Layer7 Operator. This allows you to externalize Gateway secret management by integrating with [your secrets provider](https://external-secrets.io/latest/provider/aws-secrets-manager/) (see the provider index in left nav menu) using solutions like the [External Secrets Operator](https://external-secrets.io/). The Layer7 Operator will support a similar pattern for external private key management.
+
+[Lab Exercise 9 Recording](https://youtu.be/-PlRs0Xi8iA)
 
 ## 3. Create Kubernetes Secret
 
@@ -83,29 +85,20 @@ kubectl get secret database-credentials-gcp -oyaml
 
 ## 5. Configure the Gateway
 
-We will now configure the Gateway custom resource, [`exercise9-resources/gateway.yaml`](./exercise9-resources/gateway.yaml), to include the Graphman bundle secret and the external secrets.
+We will now configure the Gateway custom resource, [`./exercise9-resources/gateway.yaml`](./exercise9-resources/gateway.yaml), to include the Graphman bundle secret and the external secrets.
 
 First, under line 33, insert the new bundle (i.e `graphman-secret-reader-bundle`):
 ```yaml
 ...
-    bundle:
-      - type: restman
-        source: secret
-        name: restman-cluster-property-bundle
-      - type: graphman
-        source: secret
-        name: graphman-cluster-property-bundle
       - type: graphman
         source: secret
         name: graphman-secret-reader-bundle
-    bootstrap:
 ...
 ```
 
 Then, on line 26, remove the array brackets (e.g. `[]`), and below that line add the external secret references:
 ```yaml
 ...
-        cpu: 2
     externalSecrets:
     - name: database-credentials-gcp
       enabled: true
@@ -122,7 +115,6 @@ Then, on line 26, remove the array brackets (e.g. `[]`), and below that line add
       enabled: true
       description: a private key
       variableReferencable: false
-    bundle:
 ...
 ```
 
@@ -154,7 +146,7 @@ Then, apply the above changes to the Gateway custom resource. Be sure to watch t
 
 ## 7. Inspect the Gateway
 
-Now, let's look at the gateway pod:
+Now, let's look at the Gateway pod:
 
 ```
 kubectl get pods
@@ -197,21 +189,21 @@ metadata:
 ...
 ```
 
-The Layer7 Operator uses the external secret checksums to keep gateway configuration in sync with external secrets. We can trigger a dynamic gateway update by modifying one of the external secret checksums. Edit the gateway pod and make a change to one of the external secret checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+The Layer7 Operator uses the external secret checksums to keep Gateway configuration in sync with external secrets. We can trigger a dynamic Gateway update by modifying one of the external secret checksums. Edit the Gateway pod and make a change to one of the external secret checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
 
 Use the ssg pod name output from the above command in the below command:
 ```
 kubectl edit pod <pod-name>
 ```
 
-You should see the change event in the Layer7 Operator logs, and you should see that your change was reverted by the Layer7 Operator if you check your gateway pod's annotations again:
+You should see the change event in the Layer7 Operator logs, and you should see that your change was reverted by the Layer7 Operator if you check your Gateway pod's annotations again:
 ```
 kubectl get pod <pod-name> -oyaml
 ```
 
 ## 8. Test your Gateway Deployment
 
-First, find the external IP address for the gateway service in your namespace:
+First, find the external IP address for the Gateway service in your namespace:
 
 ```
 kubectl get svc ssg
@@ -224,7 +216,7 @@ NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)               
 ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
 
-Next, try call the secrets service on the gateway using your external IP address. For example:
+Next, try call the secrets service on the Gateway using your external IP address. For example:
 
 ```
 curl -k https://<your-external-ip>:8443/secrets
@@ -244,7 +236,7 @@ The API should respond like so:
 }
 ```
 
-Finally, connect to your gateway with Policy Manager to view the stored passwords:
+Finally, connect to your Gateway with Policy Manager to view the stored passwords:
 
 ```
 User Name: admin

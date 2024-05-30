@@ -23,7 +23,7 @@ This lab will introduce you to the [Graphman API](https://techdocs.broadcom.com/
 
 ## 3. Comparing Environments
 
-In this workshop, we have development and production gateways. At the beginning of the workshop, their configuration is divergent. You can see this divergence by calling the same API in both environments as below:
+In this workshop, we have development and production Gateways. At the beginning of the workshop, their configuration is divergent. You can see this divergence by calling the same API in both environments as below:
 
 Call the API in development:
 ```
@@ -35,27 +35,27 @@ Call the API in production:
 curl https://myprodgw.brcmlabs.com/api1 -H "client-id: D63FA04C8447" -k
 ```
 
-> **_NOTE: When sharing this workshop environment with multiple users, or reusing an environment that has been used in a prior workshop, the difference between development and production may not exist as it may have been reconciled ahead of time. The instructor can reset the state of development and production by deleting the respective gateway pods._**
+> **_NOTE: When sharing this workshop environment with multiple users, or reusing an environment that has been used in a prior workshop, the difference between development and production may not exist as it may have been reconciled ahead of time. The instructor can reset the state of development and production by deleting the respective Gateway pods._**
 
-You should see different responses between development and production which is a reflection that the respective gateway configuration is divergent.
+You should see different responses between development and production which is a reflection that the respective Gateway configuration is divergent.
 
 ## 4. Understanding the Example Gateway Configuration
 
-This example gateway organization is inspired by real-world customer setups that have been proven to scale. The actual APIs are self-contained and can be used as-is but these are just examples, the configuration itself is not meant to be used for your own project, but rather for understanding how to best manage your gateway configuration.
+This example Gateway organization is inspired by real-world customer setups that have been proven to scale. The actual APIs are self-contained and can be used as-is but these are just examples, the configuration itself is not meant to be used for your own project, but rather for understanding how to best manage your Gateway configuration.
 
 ### Policy Tree Structure
 
-The example gateway configuration policy tree looks like this:
+The example Gateway configuration policy tree looks like this:
 
 ![example policy tree](exercise1-resources/configExampleTree.png)
 
 APIs are located under the folder `/myApis`. These APIs make use of policies that are located under the folder `/bootstrapableFramework`.
 
-Graphman (or the Gateway GraphQL Management Service) is another internal service deployed on the gateway with the URI `/graphman`.
+Graphman (or the Gateway GraphQL Management Service) is another internal service deployed on the Gateway with the URI `/graphman`.
 
 ### Other Configuration
 
-In addition to APIs and policies, a gateway contains other configuration entities. In this example, you will find cluster-wide properties, database connections, broker connections, certificates, keys, secrets, etc.
+In addition to APIs and policies, a Gateway contains other configuration entities. In this example, you will find cluster-wide properties, database connections, broker connections, certificates, keys, secrets, etc.
 
 ### Separation of Concerns and Associated Configuration
 
@@ -98,19 +98,28 @@ Point graphman to the development environment by editing `graphman.configuration
 
 ```json
 {
-    "sourceGateway": {
-        "address": "https://mydevgw.brcmlabs.com/graphman",
-        "username": "admin",
-        "password": "7layer",
-        "rejectUnauthorized": false,
-        "passphrase": "7layer"
+    "gateways": {
+        "sourceGateway": {
+            "address": "https://mydevgw.brcmlabs.com/graphman",
+            "username": "admin",
+            "password": "7layer",
+            "rejectUnauthorized": false,
+            "passphrase": "7layer",
+            "allowMutations": true
+        },
+        "targetGateway": {
+            "address": "https://myprodgw.brcmlabs.com/graphman",
+            "username": "admin",
+            "password": "7layer",
+            "rejectUnauthorized": false,
+            "passphrase": "7layer",
+            "allowMutations": true
+        }
     },
-    "targetGateway": {
-        "address": "https://myprodgw.brcmlabs.com/graphman",
-        "username": "admin",
-        "password": "7layer",
-        "rejectUnauthorized": false,
-        "passphrase": "7layer"
+    "options": {
+        "log": "info",
+        "policyCodeFormat": "xml",
+        "keyFormat": "p12"
     }
 }
 ```
@@ -121,24 +130,24 @@ Using graphman-client, you can export configuration from the development environ
 
 ### Export all, and trim
 
-Exporting the entire configuration from the gateway is all-encompassing and non-discriminate. You will get more configuration than you are interested in, but it is still a common starting point.
+Exporting the entire configuration from the Gateway is all-encompassing and non-discriminate. You will get more configuration than you are interested in, but it is still a common starting point.
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh export --using all --output totalDevEnv.json
+  $GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using all --output totalDevEnv.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat export --using all --output totalDevEnv.json
+  %GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using all --output totalDevEnv.json
   ```
 </details>
 <br/>
 
-Some of the configuration returned is local details which are managed locally at each target deployments. This includes the main key for the gateway, the local administrator account, the listening ports which are set locally, etc. You can "trim" unwanted configuration to boil it down to the area of interest.
+Some of the configuration returned is local details which are managed locally at each target deployments. This includes the main key for the Gateway, the local administrator account, the listening ports which are set locally, etc. You can "trim" unwanted configuration to boil it down to the area of interest.
 
 In the following set of commands, we take the total configuration which we just extracted, and explode it to a folder named `base`. Then we remove the local configuration entities which we don't want, and implode the configuration into a new bundle named trimmed.json.
 <details>
@@ -148,7 +157,6 @@ In the following set of commands, we take the total configuration which we just 
 $GRAPHMAN_HOME/graphman.sh explode --input totalDevEnv.json --output base
 rm -rd base/listenPorts
 rm -rd base/internalUsers
-rm base/Gateway*webapi.json
 rm base/keys/ssl.json
 rm base/clusterProperties/cluster.hostname.json 
 rm base/clusterProperties/keyStore.defaultSsl.alias.json
@@ -162,7 +170,6 @@ $GRAPHMAN_HOME/graphman.sh implode --input base --output trimmed.json
 %GRAPHMAN_HOME%\graphman.bat explode --input totalDevEnv.json --output base
 rmdir /S/Q base\listenPorts
 rmdir /S/Q base\internalUsers
-del /Q base\Gateway*webapi.json
 del /Q base\keys\ssl.json
 del /Q base\clusterProperties\cluster.hostname.json 
 del /Q base\clusterProperties\keyStore.defaultSsl.alias.json
@@ -180,14 +187,14 @@ In the previous example, we used the `all` query to pull the entire configuratio
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
+  $GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat export --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
+  %GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using folder:full --variables.folderPath /bootstrapableFramework --output frameworkAndDeps.json
   ```
 </details>
 <br/>
@@ -235,14 +242,14 @@ You can now use this query which lets you extract the CWPs that control the SLA 
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh export --using plansCWPs --output memberships.json
+  $GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using plansCWPs --output memberships.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat export --using plansCWPs --output memberships.json
+  %GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using plansCWPs --output memberships.json
   ```
 </details>
 <br/>
@@ -289,26 +296,26 @@ Sometimes, you want to combine configuration from different sources into a singl
 
 > **_NOTE: When sharing this workshop environment with multiple users, anybody can change the configuration of the production gateway. It's possible that somebody might apply changes to production ahead of time and affect your ability to detect an expected change between development and production._**
 
-There are many ways to leverage the configuration you captured in these exercises. For example, to apply it statically on gateway startup, you can bootstrap it by mounting the JSON bundle in this folder:
+There are many ways to leverage the configuration you captured in these exercises. For example, to apply it statically on Gateway startup, you can bootstrap it by mounting the JSON bundle in this folder:
 
 ```
 /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
 ```
 
-You can also apply it dynamically to a gateway with the import command without requiring a gateway restart. When using the import command, graphman will send the bundle to the gateway set as the target in graphman.configuration. We already did this at the beginning so we are good to go:
+You can also apply it dynamically to a Gateway with the import command without requiring a Gateway restart. When using the import command, graphman will send the bundle to the Gateway set as the target in graphman.configuration. We already did this at the beginning so we are good to go:
 
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
   ```
-  $GRAPHMAN_HOME/graphman.sh import --input frameworkWithoutMemberships.json
+  $GRAPHMAN_HOME/graphman.sh import --gateway targetGateway --input frameworkWithoutMemberships.json
   ```
 </details>
 <details>
   <summary><b>Windows</b></summary>
 
   ```
-  %GRAPHMAN_HOME%\graphman.bat import --input frameworkWithoutMemberships.json
+  %GRAPHMAN_HOME%\graphman.bat import --gateway targetGateway --input frameworkWithoutMemberships.json
   ```
 </details>
 <br/>
@@ -346,7 +353,7 @@ Now, you can add your configuration to the GitHub repository. See below the step
 
 ```
 $GRAPHMAN_HOME/graphman.sh explode --input frameworkWithoutMemberships.json --output myTestAltSot
-$GRAPHMAN_HOME/graphman.sh export --using summary --output myTestAltSot/sourceSummary.json
+$GRAPHMAN_HOME/graphman.sh export --gateway sourceGateway --using summary --output myTestAltSot/sourceSummary.json
 cd myTestAltSot
 git init
 git add .
@@ -367,7 +374,7 @@ git push -u origin main
 
 ```
 %GRAPHMAN_HOME%\graphman.bat explode --input frameworkWithoutMemberships.json --output myTestAltSot
-%GRAPHMAN_HOME%\graphman.bat export --using summary --output myTestAltSot\sourceSummary.json
+%GRAPHMAN_HOME%\graphman.bat export --gateway sourceGateway --using summary --output myTestAltSot\sourceSummary.json
 cd myTestAltSot
 git init
 git add .

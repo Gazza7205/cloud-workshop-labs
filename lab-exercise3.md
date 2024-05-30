@@ -18,7 +18,7 @@ Please make sure you've completed the steps [here](./readme.md) and have complet
 
 ## 2. Overview
 
-The Layer7 Operator supports the same deployment options for the Layer7 API Gateway as its Helm chart does, including support for bootstrapping bundles and initContainers. These options offer the Layer7 Operator multiple ways of managing gateways short of using configuration as code in the form of Graphman bundles pulled from git or artifact repository sources of truth, concepts that will be explored in later exercises.
+The Layer7 Operator supports the same deployment options for the Layer7 API Gateway as its Helm chart does, including support for bootstrapping bundles and initContainers. These options offer the Layer7 Operator multiple ways of managing Gateways short of using configuration as code in the form of Graphman bundles pulled from git or artifact repository sources of truth, concepts that will be explored in later exercises.
 
 This exercise should familiarize you with some of those options, including bootstrapping bundles and using initContainers, and other related Kubernetes concepts and tools.
 
@@ -26,7 +26,7 @@ This exercise should familiarize you with some of those options, including boots
 
 ## 3. Gateway Management
 
-In this section, we will create and inspect a Kubernetes secret used to manage gateway admin credentials.
+In this section, we will create and inspect a Kubernetes secret used to manage Gateway admin credentials.
 
 First, create the secret:
 ```
@@ -48,7 +48,7 @@ Try using `jsonpath` to inspect the secret values:
   ```
   kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" | base64 -d
   ```
-    ```
+  ```
   kubectl get secret gateway-secret -o jsonpath="{.data.SSG_CLUSTER_PASSWORD}" | base64 -d
   ```
 </details>
@@ -60,6 +60,9 @@ Try using `jsonpath` to inspect the secret values:
   ```
   ```  
   kubectl get secret gateway-secret -o jsonpath="{.data.SSG_ADMIN_PASSWORD}" > output.txt  && certutil -decode output.txt decoded.txt > nul  && type decoded.txt && del decoded.txt output.txt
+  ```
+  ```  
+  kubectl get secret gateway-secret -o jsonpath="{.data.SSG_CLUSTER_PASSWORD}" > output.txt  && certutil -decode output.txt decoded.txt > nul  && type decoded.txt && del decoded.txt output.txt
   ```
 </details>
 <br/>
@@ -126,7 +129,7 @@ type: Opaque
 
 When creating secrets from file you can specify the key. This also works for [kustomize](https://kustomize.io/) which we will be using shortly.
 
-For example only (these commands will fail because the secret already exists):
+_**Note: For example only (these commands will fail because the secret already exists)**_
 <details>
   <summary><b>Linux/MacOS</b></summary>
 
@@ -144,7 +147,7 @@ For example only (these commands will fail because the secret already exists):
 <br/>
 
 ## 5. Restman Bundle
-Though the Layer7 Operator is designed to primarily work with Graphman, Restman bundles can also be bootstrapped to container gateways managed by the Layer7 Operator using secrets or other mechanisms.
+Though the Layer7 Operator is designed to primarily work with Graphman, Restman bundles can also be bootstrapped to container Gateways managed by the Layer7 Operator using secrets or other mechanisms.
 
 There is a basic Restman bundle that contains a single cluster-wide property here, [./exercise3-resources/cluster-property.bundle](./exercise3-resources/cluster-property.bundle). Following the same process as before, we will create a secret that contains this bundle.
 
@@ -234,7 +237,7 @@ InitContainers are special containers that run before application containers in 
 
 There is a basic initContainer here, [./exercise3-resources/basic-initcontainer](./exercise3-resources/basic-initcontainer/). If you're familiar with the Gateway Helm Chart, you'll recognize the file/folder structure. There are additional examples [here](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) if you want to learn more about using initContainers with Layer7 API Gateways.
 
-The basic initContainer that we provide works with a shared volume (/opt/docker/custom) and a bootstrap script that moves files from this folder to the correct locations on the gateway container during startup.
+The basic initContainer that we provide works with a shared volume (/opt/docker/custom) and a bootstrap script that moves files from this folder to the correct locations on the Gateway container during startup.
 
 This is what the initContainer does:
 ```bash
@@ -363,7 +366,7 @@ For this we will be configuring this file, [`./exercise3-resources/gateway.yaml`
 
 Additional documentation for Gateway custom resources can be found [here](https://github.com/CAAPIM/layer7-operator/wiki/Gateway-Custom-Resource).
 
-First, reference the gateway secret that we created by uncommenting `secretName` (~ line 32) and deleting the following `username` and `password` lines. For example:
+First, reference the Gateway secret that we created by uncommenting `secretName` (~ line 32) and deleting the following `username` and `password` lines. For example:
 
 ```yaml
 ...
@@ -377,7 +380,6 @@ Next, enable the bootstrap script (~ line 27) and add an initContainer. For exam
 
 ```yaml
 ...
-    bundle: []
     bootstrap:
       script:
         enabled: true
@@ -388,7 +390,6 @@ Next, enable the bootstrap script (~ line 27) and add an initContainer. For exam
       volumeMounts:
       - name: config-directory
         mountPath: /opt/docker/custom
-    management:
 ...
 ```
 
@@ -396,7 +397,6 @@ Finally, references the bundles that we created by replacing the bundle array (~
 
 ```yaml
 ...
-        cpu:
     bundle:
     - type: restman
       source: secret
@@ -404,7 +404,6 @@ Finally, references the bundles that we created by replacing the bundle array (~
     - type: graphman
       source: secret
       name: graphman-cluster-property-bundle
-    bootstrap:
 ...
 ```
 
@@ -437,7 +436,7 @@ Next, apply the updated manifest:
 ## 10. Validate the Update
 Now test the update by calling an API and connecting with Policy Manager.
 
-First, find the external IP address for the gateway service in your namespace:
+First, find the external IP address for the Gateway service in your namespace:
 
 ```
 kubectl get svc ssg
@@ -450,7 +449,7 @@ NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)               
 ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
 
-Next, try calling an API on the gateway using your external IP address. For example:
+Next, try calling an API on the Gateway using your external IP address. For example:
 
 ```
 curl -k https://<your-external-ip>:8443/helloworld
@@ -461,7 +460,7 @@ The API should respond as follows:
 Hello World!
 ```
 
-Finally, connect to your gateway with Policy Manager to view the bootstrapped bundles:
+Finally, connect to your Gateway with Policy Manager to view the bootstrapped bundles:
 
 ```
 User Name: admin

@@ -65,7 +65,7 @@ l7-gw-mysubscriptions   67s
 
 ## 4. Configure Repository References
 
-Now we will update our Gateway custom resource manifest to reference the Repositories that were just created. Repository references are used by the Gateway controller to reconcile the resulting Graphman bundles from our repositories to gateways. This is tracked using annotations that are applied to each gateway pod (in ephemeral mode) or deployment (when there is a MySQL database configured).
+Now we will update our Gateway custom resource manifest to reference the Repositories that were just created. Repository references are used by the Gateway controller to reconcile the resulting Graphman bundles from our repositories to Gateways. This is tracked using annotations that are applied to each Gateway pod (in ephemeral mode) or deployment (when there is a MySQL database configured).
 
 Open this file, [`./exercise5-resources/gateway.yaml`](./exercise5-resources/gateway.yaml), and add the Repository references (~ line 37):
 
@@ -102,14 +102,14 @@ Repository references can be eithe static or dynamic.
 
 - static
     - Applied by the Layer7 Operator using a managed dynamic initContainer
-    - Applied statically via bootstrapping on gateway startup
-    - Updates require gateway restarts
+    - Applied statically via bootstrapping on Gateway startup
+    - Updates require Gateway restarts
     - Useful for configuration that changes less frequently
     - Using tags is recommended!!
 - dynamic
     - Applied by the Layer7 Operator using the Graphman API
-    - Applied dynamically via the Graphman API to running gateways
-    - Updates do not require gateway restarts
+    - Applied dynamically via the Graphman API to running Gateways
+    - Updates do not require Gateway restarts
     - Useful for configuration that changes frequently
     - Includes support for singleton configurations
     - Zero downtime
@@ -136,9 +136,9 @@ Create the `graphman-encryption-secret` secret:
 
 ## 5. Singletons
 
-Singletons are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. These don't require special support when deploying gateways backed by a shared MySQL database. However, they do need special support when deploying ephemeral gateways that don't share a database.
+Singletons are Gateway Scheduled Tasks or JMS listeners that should only run on one Gateway. These don't require special support when deploying Gateways backed by a shared MySQL database. However, they do need special support when deploying ephemeral Gateways that don't share a database.
 
-Notice the singletonExtraction property on line 36 in [`./exercise5-resources/gateway.yaml`](./exercise5-resources/gateway.yaml). Singleton extraction supports using singletons for ephemeral gateways by designating one gateway pod as a leader and only applying scheduled tasks and JMS listeners to that pod. This is currently only supported by dynamic repository references. 
+Notice the singletonExtraction property on line 36 in [`./exercise5-resources/gateway.yaml`](./exercise5-resources/gateway.yaml). Singleton extraction supports using singletons for ephemeral Gateways by designating one Gateway pod as a leader and only applying scheduled tasks and JMS listeners to that pod. This is currently only supported by dynamic repository references. 
 
 ## 6. Update the Gateway Custom Resource
 
@@ -227,7 +227,7 @@ status:
 
 ## 8. Inspect the Gateway Deployment
 
-First, let's take a look at the gateway deployment:
+First, let's take a look at the Gateway deployment:
 
 ```
 kubectl describe deployment ssg
@@ -259,7 +259,7 @@ Init Containers:
 ...
 ```
 
-Next, let's look at the gateway pod:
+Next, let's look at the Gateway pod:
 
 ```
 kubectl get pods
@@ -299,23 +299,23 @@ metadata:
 ...
 ```
 
-The Layer7 Operator uses the dynamic repository checksums to keep gateway configuration in sync with repository configuration. We can trigger a dynamic gateway update by modifying one of the dynamic repository checksums. Edit the gateway pod and make a change to one of the dynamic repository checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
+The Layer7 Operator uses the dynamic repository checksums to keep Gateway configuration in sync with repository configuration. We can trigger a dynamic Gateway update by modifying one of the dynamic repository checksums. Edit the Gateway pod and make a change to one of the dynamic repository checksums, and then save your change. Be sure to watch the Layer7 Operator logs that you are tailing to see it detect these changes.
 
 Use the ssg pod name output from the above command in the below command:
 ```
 kubectl edit pod <pod-name>
 ```
 
-You should see the change event in the Layer7 Operator logs, and you should see that your change was reverted by the Layer7 Operator if you check your gateway pod's annotations again:
+You should see the change event in the Layer7 Operator logs, and you should see that your change was reverted by the Layer7 Operator if you check your Gateway pod's annotations again:
 ```
 kubectl get pod <pod-name> -oyaml
 ```
 
 ## 9. Test the Gateway Deployment
 
-Now, let's test our gateway by calling an API and connecting with Policy Manager to view the gateway's configuration that was applied using Repository references.
+Now, let's test our Gateway by calling an API and connecting with Policy Manager to view the Gateway's configuration that was applied using Repository references.
 
-First, find the external IP address for the gateway service in your namespace:
+First, find the external IP address for the Gateway service in your namespace:
 
 ```
 kubectl get svc ssg
@@ -328,7 +328,7 @@ NAME   TYPE           CLUSTER-IP     ***EXTERNAL-IP***    PORT(S)               
 ssg    LoadBalancer   10.96.14.218   34.168.26.20         8443:32060/TCP,9443:30632/TCP   80s
 ```
 
-Next, try calling an API on the gateway using your external IP address. For example:
+Next, try calling an API on the Gateway using your external IP address. For example:
 
 ```
 curl -k -H "client-id: D63FA04C8447" https://<your-external-ip>:8443/api1
@@ -344,7 +344,7 @@ The API should respond like so:
 }
 ```
 
-Finally, connect to your gateway with Policy Manager to view the statically and dynamically applied configuration:
+Finally, connect to your Gateway with Policy Manager to view the statically and dynamically applied configuration:
 ```
 User Name: admin
 Password: 7layer
